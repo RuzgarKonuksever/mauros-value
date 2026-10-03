@@ -1,0 +1,4 @@
+# Only the website itself goes public. Helper scripts, notes and the value list stay on this computer.
+.claude/
+CLAUDE.md
+values.txt
