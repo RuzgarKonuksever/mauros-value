@@ -17,6 +17,31 @@
       navHomeShort: "Home",
       navPlayers: "All players",
       navPlayersShort: "Players",
+      navPredictions: "Predictions",
+      navPredictionsShort: "Guess",
+      predEyebrow: "Europe · {season}",
+      predLede: "Guess the score of our clubs' European matches. Played or upcoming, you can guess any match at any time.",
+      predNameLabel: "Your username",
+      predNamePlaceholder: "e.g. Ruzgar10",
+      predContinue: "Continue",
+      predHello: "Hi, {name}!",
+      predChange: "Change name",
+      predUpcoming: "Upcoming matches",
+      predPlayed: "Played matches",
+      predSave: "Save",
+      predSaved: "Saved",
+      predYour: "Your guess: {score}",
+      predWall: "Guess wall",
+      predWallNote: "Guesses made on this device.",
+      predWallEmpty: "No guesses yet. Be the first!",
+      predGuessed: "{name} guessed",
+      predExact: "Exact score!",
+      predResult: "Right result",
+      predMiss: "Missed",
+      predNone: "No matches for this club.",
+      stage_qualifying: "Qualifying",
+      stage_league: "League phase",
+      stage_knockout: "Knockout",
       search: "Search players",
       language: "Language",
       heroTitle: "The real value of the Big Four",
@@ -102,6 +127,31 @@
       navHomeShort: "Özet",
       navPlayers: "Tüm oyuncular",
       navPlayersShort: "Oyuncular",
+      navPredictions: "Tahminler",
+      navPredictionsShort: "Tahmin",
+      predEyebrow: "Avrupa · {season}",
+      predLede: "Kulüplerimizin Avrupa maçlarının skorunu tahmin et. Oynanmış ya da oynanacak, istediğin maçı istediğin zaman tahmin edebilirsin.",
+      predNameLabel: "Kullanıcı adın",
+      predNamePlaceholder: "ör. Ruzgar10",
+      predContinue: "Devam",
+      predHello: "Merhaba, {name}!",
+      predChange: "Adı değiştir",
+      predUpcoming: "Oynanacak maçlar",
+      predPlayed: "Oynanan maçlar",
+      predSave: "Kaydet",
+      predSaved: "Kaydedildi",
+      predYour: "Tahminin: {score}",
+      predWall: "Tahmin duvarı",
+      predWallNote: "Bu cihazda yapılan tahminler.",
+      predWallEmpty: "Henüz tahmin yok. İlk tahmini sen yap!",
+      predGuessed: "{name} tahmin etti",
+      predExact: "Tam skor!",
+      predResult: "Doğru sonuç",
+      predMiss: "Tutmadı",
+      predNone: "Bu kulübün maçı yok.",
+      stage_qualifying: "Ön eleme",
+      stage_league: "Lig aşaması",
+      stage_knockout: "Eleme turu",
       search: "Oyuncu ara",
       language: "Dil",
       heroTitle: "Dört Büyüklerin gerçek değeri",
@@ -866,6 +916,164 @@
   dialog.addEventListener("close", () => { openId = null; });
   dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
 
+  /* ---------- Predictions ---------- */
+
+  // Guesses live in this browser for now; swapping this object for an online store makes the wall shared.
+  const GUESS_KEY = "mauros-value.guesses";
+  const USER_KEY = "mauros-value.user";
+  const guessStore = {
+    all() {
+      try { return JSON.parse(store.get(GUESS_KEY) || "[]").filter((g) => g && g.user && g.match); } catch (e) { return []; }
+    },
+    save(entry) {
+      const list = this.all().filter((g) => !(g.user === entry.user && g.match === entry.match));
+      list.push(entry);
+      store.set(GUESS_KEY, JSON.stringify(list.slice(-500)));
+    }
+  };
+  let predUser = (store.get(USER_KEY) || "").trim();
+  let justSaved = null;
+
+  const FIXTURES = ((window.GD_FIXTURES || {}).matches || []).slice();
+  const clubName = (id) => (clubById.get(id) || {}).name;
+
+  // Our club shows with its proper name and badge; the opponent as the provider names it.
+  function teamLabel(m, side) {
+    const ours = m.ourSide === side;
+    const club = clubById.get(m.club);
+    const name = ours && club ? club.name : m[side];
+    return `<span class="mt-team${ours ? " ours" : ""}">${ours && club ? badge(club, 22) : ""}<span>${esc(name)}</span></span>`;
+  }
+
+  const stageLabel = (stage) => {
+    if (/qualif/i.test(stage)) return t("stage_qualifying");
+    if (/league/i.test(stage)) return t("stage_league");
+    if (/knock|play-?off|final|round of/i.test(stage)) return t("stage_knockout");
+    return stage;
+  };
+
+  const kickoffText = (iso) =>
+    new Intl.DateTimeFormat(loc(), { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+
+  // Exact score, right result (win/draw/loss), or a miss.
+  function verdict(m, g) {
+    if (m.status !== "played" || m.hs == null || g == null) return "";
+    if (g.h === m.hs && g.a === m.as) return `<span class="verdict exact">${esc(t("predExact"))}</span>`;
+    if (Math.sign(g.h - g.a) === Math.sign(m.hs - m.as)) return `<span class="verdict right">${esc(t("predResult"))}</span>`;
+    return `<span class="verdict miss">${esc(t("predMiss"))}</span>`;
+  }
+
+  function matchCard(m, mine) {
+    const meta = (STATS.competitions || {})[m.comp] || {};
+    const logo = meta.logo || `images/leagues/${m.comp}.png`;
+    const played = m.status === "played" && m.hs != null;
+    const g = mine[m.id];
+    const centre = played
+      ? `<span class="mt-score">${m.hs}<i>–</i>${m.as}</span>`
+      : `<span class="mt-vs">vs</span>`;
+    return `
+      <article class="match club-scope" style="${clubById.get(m.club) ? clubById.get(m.club).vars : ""}">
+        <header class="mt-head">
+          <span class="comp"><span class="comp-logo"><img src="${esc(assetUrl(logo))}" alt="" loading="lazy"></span>${esc(compName(m.comp))} · ${esc(stageLabel(m.stage))}</span>
+          <time datetime="${esc(m.kickoff)}">${esc(kickoffText(m.kickoff))}</time>
+        </header>
+        <div class="mt-row">${teamLabel(m, "home")}${centre}${teamLabel(m, "away")}</div>
+        <form class="mt-guess" data-match="${esc(m.id)}">
+          <input type="number" inputmode="numeric" min="0" max="20" name="h" aria-label="${esc(m.home)}" value="${g ? g.h : ""}" required>
+          <span aria-hidden="true">–</span>
+          <input type="number" inputmode="numeric" min="0" max="20" name="a" aria-label="${esc(m.away)}" value="${g ? g.a : ""}" required>
+          <button type="submit">${esc(justSaved === m.id ? t("predSaved") + " ✓" : t("predSave"))}</button>
+          ${g ? `<span class="mt-mine">${esc(t("predYour", { score: g.h + "–" + g.a }))}</span>` : ""}
+          ${verdict(m, g)}
+        </form>
+      </article>`;
+  }
+
+  function predictionsPage() {
+    const head = `
+      <section class="page-head">
+        <p class="eyebrow">${esc(t("predEyebrow", { season: DATA.season }))}</p>
+        <h1>${esc(t("navPredictions"))}</h1>
+        <p class="lede">${esc(t("predLede"))}</p>
+      </section>`;
+    if (!predUser) {
+      return head + `
+        <form class="pred-name" id="pred-name-form">
+          <label for="pred-user">${esc(t("predNameLabel"))}</label>
+          <div class="pred-name-row">
+            <input id="pred-user" type="text" maxlength="20" autocomplete="nickname" placeholder="${esc(t("predNamePlaceholder"))}" required>
+            <button type="submit">${esc(t("predContinue"))}</button>
+          </div>
+        </form>`;
+    }
+    const all = guessStore.all();
+    const mine = {};
+    all.filter((g) => g.user === predUser).forEach((g) => { mine[g.match] = g; });
+    const list = FIXTURES.filter((m) => state.club === "all" || m.club === state.club);
+    const upcoming = list.filter((m) => m.status !== "played").sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+    const played = list.filter((m) => m.status === "played").sort((a, b) => b.kickoff.localeCompare(a.kickoff));
+    const clubChips = [chip("club", "all", esc(t("allClubs")))]
+      .concat(clubs.map((c) => chip("club", c.id, `${badge(c, 20)}<span>${esc(c.short)}</span>`, c.name)))
+      .join("");
+    const byId = new Map(FIXTURES.map((m) => [m.id, m]));
+    const wall = all.filter((g) => byId.has(g.match)).sort((a, b) => (b.at || "").localeCompare(a.at || "")).slice(0, 60);
+    const wallItems = wall.map((g) => {
+      const m = byId.get(g.match);
+      const home = m.ourSide === "home" ? clubName(m.club) : m.home;
+      const away = m.ourSide === "away" ? clubName(m.club) : m.away;
+      return `
+        <li>
+          <p class="wall-who"><b>${esc(g.user)}</b> ${esc(t("predGuessed", { name: "" }).trim())}</p>
+          <p class="wall-guess">${esc(home)} <b>${g.h}–${g.a}</b> ${esc(away)} ${verdict(m, g)}</p>
+          <p class="wall-meta">${esc(compName(m.comp))} · ${esc(kickoffText(m.kickoff))}</p>
+        </li>`;
+    }).join("");
+    return head + `
+      <div class="pred-bar">
+        <p>${esc(t("predHello", { name: predUser }))}</p>
+        <button type="button" class="link" data-action="pred-change">${esc(t("predChange"))}</button>
+      </div>
+      <div class="filters"><div class="chips" role="group" aria-label="${esc(t("colClub"))}">${clubChips}</div></div>
+      <div class="pred-layout">
+        <div class="pred-matches">
+          ${upcoming.length ? `<h2 class="pred-h">${esc(t("predUpcoming"))}</h2>${upcoming.map((m) => matchCard(m, mine)).join("")}` : ""}
+          ${played.length ? `<h2 class="pred-h">${esc(t("predPlayed"))}</h2>${played.map((m) => matchCard(m, mine)).join("")}` : ""}
+          ${!upcoming.length && !played.length ? `<p class="results">${esc(t("predNone"))}</p>` : ""}
+        </div>
+        <aside class="panel pred-wall" aria-labelledby="wall-title">
+          <div class="panel-head"><h2 id="wall-title">${esc(t("predWall"))}</h2></div>
+          <p class="wall-note">${esc(t("predWallNote"))}</p>
+          ${wallItems ? `<ol class="wall">${wallItems}</ol>` : `<p class="results">${esc(t("predWallEmpty"))}</p>`}
+        </aside>
+      </div>`;
+  }
+
+  // Username form and guess forms on the predictions page.
+  document.addEventListener("submit", (e) => {
+    const form = e.target;
+    if (form.id === "pred-name-form") {
+      e.preventDefault();
+      const name = form.querySelector("#pred-user").value.replace(/\s+/g, " ").trim().slice(0, 20);
+      if (!name) return;
+      predUser = name;
+      store.set(USER_KEY, name);
+      renderMain();
+      return;
+    }
+    if (form.classList && form.classList.contains("mt-guess")) {
+      e.preventDefault();
+      const h = parseInt(form.elements.h.value, 10);
+      const a = parseInt(form.elements.a.value, 10);
+      if (!Number.isFinite(h) || !Number.isFinite(a) || h < 0 || a < 0 || h > 20 || a > 20) return;
+      const id = form.dataset.match;
+      guessStore.save({ user: predUser, match: id, h, a, at: new Date().toISOString() });
+      justSaved = id;
+      const y = window.scrollY;
+      renderMain();
+      window.scrollTo(0, y);
+    }
+  });
+
   /* ---------- Render + routing ---------- */
 
   const searchInput = $("#q");
@@ -875,6 +1083,7 @@
     const hash = decodeURIComponent(location.hash.replace(/^#/, "")).toLowerCase();
     if (clubById.has(hash)) return { page: "club", club: clubById.get(hash) };
     if (hash === "players") return { page: "players" };
+    if (hash === "predictions") return { page: "predictions" };
     return { page: "home" };
   }
 
@@ -889,7 +1098,8 @@
         route.page === "club" && route.club === c,
         ` class="club-scope" style="${c.vars}" title="${esc(c.name)}"`
       )),
-      tab("#players", `<span class="tab-full">${esc(t("navPlayers"))}</span><span class="tab-short" aria-hidden="true">${esc(t("navPlayersShort"))}</span>`, route.page === "players")
+      tab("#players", `<span class="tab-full">${esc(t("navPlayers"))}</span><span class="tab-short" aria-hidden="true">${esc(t("navPlayersShort"))}</span>`, route.page === "players"),
+      tab("#predictions", `<span class="tab-full">${esc(t("navPredictions"))}</span><span class="tab-short" aria-hidden="true">${esc(t("navPredictionsShort"))}</span>`, route.page === "predictions")
     ];
     $("#tabs").innerHTML = `<div class="tabs-inner">${items.join("")}</div>`;
   }
@@ -918,12 +1128,19 @@
       searchInput.value = "";
     }
     renderTabs(route);
+    if (route.page !== "predictions") justSaved = null;
     $("#main").innerHTML = route.page === "club" ? clubPage(route.club)
       : route.page === "players" ? playersPage()
+      : route.page === "predictions" ? predictionsPage()
       : homePage();
     document.title = route.page === "club" ? `${route.club.name} · Mauro's Value`
       : route.page === "players" ? `${t("navPlayers")} · Mauro's Value`
+      : route.page === "predictions" ? `${t("navPredictions")} · Mauro's Value`
       : "Mauro's Value";
+    if (route.page === "predictions" && !predUser) {
+      const input = $("#pred-user");
+      if (input) input.focus();
+    }
     const key = route.page + (route.club ? ":" + route.club.id : "");
     if (key !== lastPageKey) {
       if (lastPageKey !== null) window.scrollTo(0, 0);
@@ -964,6 +1181,11 @@
     const action = el.closest("[data-action]");
     if (action) {
       if (action.dataset.action === "close") dialog.close();
+      if (action.dataset.action === "pred-change") {
+        predUser = "";
+        store.set(USER_KEY, "");
+        renderMain();
+      }
       if (action.dataset.action === "clear-search") {
         state.q = "";
         searchInput.value = "";
