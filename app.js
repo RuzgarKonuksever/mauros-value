@@ -72,6 +72,10 @@
       statsTitle: "This season",
       statsNote: "{season} · all competitions",
       statApps: "Games",
+      statMins: "Minutes",
+      statMinsShort: "Min",
+      statAssistsShort: "Ast",
+      colComp: "Competition",
       statGoals: "Goals",
       statAssists: "Assists",
       statYellow: "Yellow",
@@ -153,6 +157,10 @@
       statsTitle: "Bu sezon",
       statsNote: "{season} · tüm turnuvalar",
       statApps: "Maç",
+      statMins: "Dakika",
+      statMinsShort: "Dk",
+      statAssistsShort: "Asist",
+      colComp: "Turnuva",
       statGoals: "Gol",
       statAssists: "Asist",
       statYellow: "Sarı",
@@ -726,11 +734,65 @@
   const dialog = $("#player");
   let openId = null;
 
-  // Season stats from stats.js: games, goals, assists, cards. Hidden until stats.js has data.
+  // Competition ids come from stats.js; these give short names in both languages and the display order.
+  const COMPETITIONS = [
+    ["super-lig", "Süper Lig", "Süper Lig"],
+    ["turkish-cup", "Turkish Cup", "Türkiye Kupası"],
+    ["turkiye-kupasi", "Turkish Cup", "Türkiye Kupası"],
+    ["turkish-super-cup", "Super Cup", "Süper Kupa"],
+    ["super-cup", "Super Cup", "Süper Kupa"],
+    ["uefa-champions-league", "Champions League", "Şampiyonlar Ligi"],
+    ["uefa-europa-league", "Europa League", "Avrupa Ligi"],
+    ["uefa-conference-league", "Conference League", "Konferans Ligi"],
+    ["uefa-europa-conference-league", "Conference League", "Konferans Ligi"]
+  ];
+  const compOrder = (id) => {
+    const i = COMPETITIONS.findIndex((c) => c[0] === id);
+    return i < 0 ? COMPETITIONS.length : i;
+  };
+  const compName = (id) => {
+    const known = COMPETITIONS.find((c) => c[0] === id);
+    if (known) return known[lang === "tr" ? 2 : 1];
+    return ((STATS.competitions || {})[id] || {}).name || id;
+  };
+
+  // One row per competition: logo, name, then games, minutes, goals, assists, yellow, red.
+  function compTable(s) {
+    const ids = Object.keys((s && s.comps) || {}).sort((a, b) => compOrder(a) - compOrder(b));
+    if (!ids.length) return "";
+    const card = (cls, key) => `<span class="card-icon ${cls}" aria-hidden="true"></span><span class="vh">${esc(t(key))}</span>`;
+    const rows = ids.map((id) => {
+      const c = s.comps[id];
+      const logo = ((STATS.competitions || {})[id] || {}).logo;
+      return `
+        <tr>
+          <th scope="row"><span class="comp">${logo ? `<span class="comp-logo"><img src="${esc(logo)}" alt="" loading="lazy"></span>` : ""}${esc(compName(id))}</span></th>
+          <td>${c[0]}</td><td>${nf(c[1], 0)}</td><td>${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td>${c[5]}</td>
+        </tr>`;
+    }).join("");
+    return `
+      <div class="pm-comps">
+        <table>
+          <thead><tr>
+            <th scope="col">${esc(t("colComp"))}</th>
+            <th scope="col">${esc(t("statApps"))}</th>
+            <th scope="col">${esc(t("statMinsShort"))}</th>
+            <th scope="col">${esc(t("statGoals"))}</th>
+            <th scope="col">${esc(t("statAssistsShort"))}</th>
+            <th scope="col">${card("yellow", "statYellow")}</th>
+            <th scope="col">${card("red", "statRed")}</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  // Season stats from stats.js: games, minutes, goals, assists, cards. Hidden until stats.js has data.
   function statsBlock(p) {
     if (!STATS.updated) return "";
     const s = p.stats;
     const num = (k) => (s ? (Number.isFinite(s[k]) ? s[k] : 0) : "–");
+    const mins = s && Number.isFinite(s.mins) ? nf(s.mins, 0) : "–";
     const card = (cls) => `<span class="card-icon ${cls}" aria-hidden="true"></span>`;
     const foot = esc(t("statsUpdated", { date: fmtDate(STATS.updated) })) + (s ? "" : " · " + esc(t("statsNone")));
     return `
@@ -741,11 +803,13 @@
         </div>
         <dl class="pm-stat-grid">
           <div><dt>${esc(t("statApps"))}</dt><dd>${num("apps")}</dd></div>
+          <div><dt>${esc(t("statMins"))}</dt><dd>${mins}</dd></div>
           <div><dt>${esc(t("statGoals"))}</dt><dd>${num("goals")}</dd></div>
           <div><dt>${esc(t("statAssists"))}</dt><dd>${num("assists")}</dd></div>
           <div><dt>${card("yellow")}<span class="card-label">${esc(t("statYellow"))}</span></dt><dd>${num("yellow")}</dd></div>
           <div><dt>${card("red")}<span class="card-label">${esc(t("statRed"))}</span></dt><dd>${num("red")}</dd></div>
         </dl>
+        ${compTable(s)}
         <p class="pm-stats-foot">${foot}</p>
       </section>`;
   }

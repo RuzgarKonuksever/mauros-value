@@ -1146,7 +1146,7 @@ main { display: block; padding-block: 28px 72px; }
 
 .pm-stat-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
   margin: 0;
 }
@@ -1182,6 +1182,8 @@ main { display: block; padding-block: 28px 72px; }
 
 .card-icon {
   flex: none;
+  display: inline-block;
+  vertical-align: middle;
   width: 8px;
   height: 11px;
   border-radius: 2px;
@@ -1189,6 +1191,62 @@ main { display: block; padding-block: 28px 72px; }
 }
 
 .card-icon.red { background: var(--card-red); }
+
+/* Six boxes are too narrow for "Kırmızı"; the card colour says it, and screen readers still get the word. */
+.pm-stat-grid .card-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.pm-stat-grid .card-icon { width: 10px; height: 14px; }
+
+.pm-comps { margin-top: 10px; overflow-x: auto; }
+
+.pm-comps table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-comps th,
+.pm-comps td {
+  padding: 7px 5px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pm-comps thead th {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pm-comps th:first-child { text-align: left; padding-left: 0; }
+.pm-comps tbody th { font-weight: 600; }
+.pm-comps tbody tr:last-child > * { border-bottom: 0; }
+
+.comp { display: inline-flex; align-items: center; gap: 8px; white-space: normal; }
+
+/* Logos sit on a small white chip so dark logos stay visible in dark mode. */
+.comp-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.comp-logo img { width: 18px; height: 18px; object-fit: contain; }
 
 .pm-stats-foot { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
 
@@ -1294,8 +1352,7 @@ main { display: block; padding-block: 28px 72px; }
   .pm-body { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 20px; }
   .pm-side { grid-template-columns: 132px minmax(0, 1fr); align-items: end; }
   .pm-info h2 { font-size: 36px; }
-  .pm-stat-grid .card-label { display: none; }
-  .pm-stat-grid .card-icon { width: 10px; height: 14px; }
+  .pm-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 560px) {
