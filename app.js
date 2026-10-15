@@ -34,6 +34,11 @@
       predWall: "Guess wall",
       predWallNote: "Guesses made on this device.",
       predWallEmpty: "No guesses yet. Be the first!",
+      predWallShared: "Everyone's guesses, newest first.",
+      predRefresh: "Refresh",
+      predLoading: "Loading guesses…",
+      predLoadError: "Couldn't load the guesses right now. Try Refresh in a moment.",
+      predSaveError: "Your guess was saved on this device but couldn't be sent. Try saving again in a moment.",
       predGuessed: "{name} guessed",
       predExact: "Exact score!",
       predResult: "Right result",
@@ -144,6 +149,11 @@
       predWall: "Tahmin duvarı",
       predWallNote: "Bu cihazda yapılan tahminler.",
       predWallEmpty: "Henüz tahmin yok. İlk tahmini sen yap!",
+      predWallShared: "Herkesin tahminleri, en yenisi en üstte.",
+      predRefresh: "Yenile",
+      predLoading: "Tahminler yükleniyor…",
+      predLoadError: "Tahminler şu an yüklenemedi. Biraz sonra Yenile'ye bas.",
+      predSaveError: "Tahminin bu cihaza kaydedildi ama gönderilemedi. Biraz sonra tekrar kaydet.",
       predGuessed: "{name} tahmin etti",
       predExact: "Tam skor!",
       predResult: "Doğru sonuç",
@@ -918,10 +928,14 @@
 
   /* ---------- Predictions ---------- */
 
-  // Guesses live in this browser for now; swapping this object for an online store makes the wall shared.
+  // Shared guesses live in the owner's Supabase table "guesses" (public read/insert/update by design: a fan game
+  // with no accounts). The publishable key is meant to be public. Until it's filled in, guesses stay in this browser.
+  const SUPABASE = { url: "https://mthczixjdmepkqlkuxjw.supabase.co", key: "sb_publishable_kEPXQjr4U_q8yGlsztQUhQ_i_J22HHE" };
+  const SHARED = Boolean(SUPABASE.url && SUPABASE.key);
   const GUESS_KEY = "mauros-value.guesses";
   const USER_KEY = "mauros-value.user";
-  const guessStore = {
+
+  const localGuesses = {
     all() {
       try { return JSON.parse(store.get(GUESS_KEY) || "[]").filter((g) => g && g.user && g.match); } catch (e) { return []; }
     },
@@ -931,6 +945,59 @@
       store.set(GUESS_KEY, JSON.stringify(list.slice(-500)));
     }
   };
+
+  const remote = { list: [], loaded: false, error: "" };
+  const sbHeaders = () => ({ apikey: SUPABASE.key, Authorization: `Bearer ${SUPABASE.key}` });
+
+  async function loadSharedGuesses() {
+    try {
+      const r = await fetch(`${SUPABASE.url}/rest/v1/guesses?select=username,match_id,home,away,updated_at&order=updated_at.desc&limit=1000`, { headers: sbHeaders() });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const rows = await r.json();
+      remote.list = rows.map((x) => ({ user: x.username, match: x.match_id, h: x.home, a: x.away, at: x.updated_at }));
+      remote.error = "";
+    } catch (e) {
+      remote.error = "load";
+    }
+    remote.loaded = true;
+    rerenderPredictions();
+  }
+
+  async function saveSharedGuess(entry) {
+    // Show it straight away, then store it; one guess per username per match (a new guess replaces the old one).
+    remote.list = remote.list.filter((g) => !(g.user === entry.user && g.match === entry.match));
+    remote.list.unshift(entry);
+    try {
+      const r = await fetch(`${SUPABASE.url}/rest/v1/guesses?on_conflict=username,match_id`, {
+        method: "POST",
+        headers: { ...sbHeaders(), "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ username: entry.user, match_id: entry.match, home: entry.h, away: entry.a, updated_at: entry.at })
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      remote.error = "";
+    } catch (e) {
+      remote.error = "save";
+    }
+    loadSharedGuesses();
+  }
+
+  const guessStore = {
+    all() { return SHARED ? remote.list : localGuesses.all(); },
+    save(entry) {
+      localGuesses.save(entry);
+      if (SHARED) saveSharedGuess(entry);
+    }
+  };
+
+  // Re-render the predictions page without jumping, and never while someone is typing a score.
+  function rerenderPredictions() {
+    if (currentRoute().page !== "predictions") return;
+    const active = document.activeElement;
+    if (active && active.closest && active.closest(".mt-guess")) return;
+    const y = window.scrollY;
+    renderMain();
+    window.scrollTo(0, y);
+  }
   let predUser = (store.get(USER_KEY) || "").trim();
   let justSaved = null;
 
@@ -1041,9 +1108,14 @@
           ${!upcoming.length && !played.length ? `<p class="results">${esc(t("predNone"))}</p>` : ""}
         </div>
         <aside class="panel pred-wall" aria-labelledby="wall-title">
-          <div class="panel-head"><h2 id="wall-title">${esc(t("predWall"))}</h2></div>
-          <p class="wall-note">${esc(t("predWallNote"))}</p>
-          ${wallItems ? `<ol class="wall">${wallItems}</ol>` : `<p class="results">${esc(t("predWallEmpty"))}</p>`}
+          <div class="panel-head">
+            <h2 id="wall-title">${esc(t("predWall"))}</h2>
+            ${SHARED ? `<button type="button" class="link" data-action="pred-refresh">${esc(t("predRefresh"))}</button>` : ""}
+          </div>
+          <p class="wall-note">${esc(t(SHARED ? "predWallShared" : "predWallNote"))}</p>
+          ${remote.error ? `<p class="wall-error">${esc(t(remote.error === "save" ? "predSaveError" : "predLoadError"))}</p>` : ""}
+          ${SHARED && !remote.loaded ? `<p class="results">${esc(t("predLoading"))}</p>`
+            : wallItems ? `<ol class="wall">${wallItems}</ol>` : `<p class="results">${esc(t("predWallEmpty"))}</p>`}
         </aside>
       </div>`;
   }
@@ -1145,6 +1217,8 @@
     if (key !== lastPageKey) {
       if (lastPageKey !== null) window.scrollTo(0, 0);
       lastPageKey = key;
+      // Fetch everyone's guesses each time the predictions page is opened.
+      if (route.page === "predictions" && SHARED) loadSharedGuesses();
     }
   }
 
@@ -1181,6 +1255,7 @@
     const action = el.closest("[data-action]");
     if (action) {
       if (action.dataset.action === "close") dialog.close();
+      if (action.dataset.action === "pred-refresh") loadSharedGuesses();
       if (action.dataset.action === "pred-change") {
         predUser = "";
         store.set(USER_KEY, "");
