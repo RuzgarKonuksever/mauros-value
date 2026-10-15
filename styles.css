@@ -1201,9 +1201,12 @@ main { display: block; padding-block: 28px 72px; }
 .wall-guess { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 2px 0; font-weight: 600; }
 .wall-meta { font-size: 12px; color: var(--muted); }
 
+/* On phones the wall goes above the matches so everyone's guesses are seen first,
+   with its own short scroll so the matches stay close. */
 @media (max-width: 860px) {
   .pred-layout { grid-template-columns: minmax(0, 1fr); }
-  .pred-wall { position: static; }
+  .pred-wall { position: static; order: -1; }
+  .wall { max-height: 280px; }
 }
 
 /* ---------- Player dialog ---------- */
