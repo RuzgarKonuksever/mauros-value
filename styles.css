@@ -26,6 +26,7 @@
   --grass-stripe: #EAF0E9;
   --pitch-line: rgb(11 116 68 / 0.18);
   --mauro-opacity: 0.17;
+  --logo-outline: none;
 
   --font-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
   --font-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -58,6 +59,7 @@
     --grass-stripe: #0E1612;
     --pitch-line: rgb(255 255 255 / 0.08);
     --mauro-opacity: 0.1;
+    --logo-outline: drop-shadow(0 0 1px rgb(255 255 255 / 0.75));
     color-scheme: dark;
   }
 }
@@ -83,6 +85,7 @@
   --grass-stripe: #0E1612;
   --pitch-line: rgb(255 255 255 / 0.08);
   --mauro-opacity: 0.1;
+  --logo-outline: drop-shadow(0 0 1px rgb(255 255 255 / 0.75));
   color-scheme: dark;
 }
 
@@ -1281,19 +1284,16 @@ main { display: block; padding-block: 28px 72px; }
 
 .comp { display: inline-flex; align-items: center; gap: 8px; white-space: normal; }
 
-/* Logos sit on a small white chip so dark logos stay visible in dark mode. */
+/* Transparent league badges. In dark mode a thin light outline keeps black parts (the Europa trophy) visible. */
 .comp-logo {
   flex: none;
   display: grid;
   place-items: center;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
-  background: #FFFFFF;
-  box-shadow: 0 0 0 1px var(--line);
 }
 
-.comp-logo img { width: 18px; height: 18px; object-fit: contain; }
+.comp-logo img { width: 24px; height: 24px; object-fit: contain; filter: var(--logo-outline); }
 
 .pm-stats-foot { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
 
