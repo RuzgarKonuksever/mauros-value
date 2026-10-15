@@ -756,6 +756,14 @@
     return ((STATS.competitions || {})[id] || {}).name || id;
   };
 
+  // Logos reuse the ?v= stamp that each upload puts on app.js, so a changed logo is never shown from an old saved copy.
+  const ASSET_STAMP = (() => {
+    const tag = document.querySelector('script[src*="app.js"]');
+    const m = tag && /[?&]v=(\w+)/.exec(tag.getAttribute("src"));
+    return m ? m[1] : "";
+  })();
+  const assetUrl = (path) => (ASSET_STAMP ? `${path}?v=${ASSET_STAMP}` : path);
+
   // One row per competition: logo, name, then games, minutes, goals, assists, yellow, red.
   function compTable(s) {
     const ids = Object.keys((s && s.comps) || {}).sort((a, b) => compOrder(a) - compOrder(b));
@@ -766,7 +774,7 @@
       const logo = ((STATS.competitions || {})[id] || {}).logo;
       return `
         <tr>
-          <th scope="row"><span class="comp">${logo ? `<span class="comp-logo"><img src="${esc(logo)}" alt="" loading="lazy"></span>` : ""}${esc(compName(id))}</span></th>
+          <th scope="row"><span class="comp">${logo ? `<span class="comp-logo"><img src="${esc(assetUrl(logo))}" alt="" loading="lazy"></span>` : ""}${esc(compName(id))}</span></th>
           <td>${c[0]}</td><td>${nf(c[1], 0)}</td><td>${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td>${c[5]}</td>
         </tr>`;
     }).join("");
