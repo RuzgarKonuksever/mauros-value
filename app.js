@@ -1020,6 +1020,105 @@
     renderMain();
   });
 
+  // Two white fireworks, top-left and top-right, once when the site opens.
+  function fireworks() {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const canvas = document.createElement("canvas");
+    canvas.className = "fireworks";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
+    // White sparks need a soft shadow on the light background and a soft glow on the dark one.
+    const bg = getComputedStyle(document.body).backgroundColor.match(/\d+/g) || [255, 255, 255];
+    const darkBg = (0.3 * bg[0] + 0.59 * bg[1] + 0.11 * bg[2]) < 128;
+    ctx.shadowColor = darkBg ? "rgba(255, 255, 255, 0.9)" : "rgba(16, 26, 20, 0.65)";
+    ctx.shadowBlur = darkBg ? 8 : 5;
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.lineCap = "round";
+
+    const unit = Math.max(0.7, Math.min(W, H) / 700);
+    const rockets = [
+      { x: W * 0.16, delay: 0 },
+      { x: W * 0.84, delay: 280 }
+    ].map((r) => ({ ...r, y0: H + 10, y1: H * (W < 720 ? 0.22 : 0.2), rise: 750, burst: false, sparks: [] }));
+
+    const start = performance.now();
+    let last = start;
+    function frame(now) {
+      const dt = Math.min(2.5, (now - last) / 16.7);
+      last = now;
+      ctx.clearRect(0, 0, W, H);
+      let alive = false;
+      for (const r of rockets) {
+        const t = now - start - r.delay;
+        if (t < 0) { alive = true; continue; }
+        if (!r.burst) {
+          // Rising rocket with a short tail, easing out as it reaches the top.
+          const k = Math.min(1, t / r.rise);
+          const ease = 1 - Math.pow(1 - k, 3);
+          const y = r.y0 + (r.y1 - r.y0) * ease;
+          ctx.globalAlpha = 1;
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.moveTo(r.x, y + 26 * (1 - ease) + 6);
+          ctx.lineTo(r.x, y);
+          ctx.stroke();
+          alive = true;
+          if (k >= 1) {
+            r.burst = true;
+            for (let i = 0; i < 80; i++) {
+              const a = (Math.PI * 2 * i) / 80 + Math.random() * 0.08;
+              const s = (1.6 + Math.random() * 3.2) * unit;
+              r.sparks.push({ x: r.x, y: r.y1, px: r.x, py: r.y1, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, fade: 0.010 + Math.random() * 0.008 });
+            }
+          }
+          continue;
+        }
+        for (const p of r.sparks) {
+          if (p.life <= 0) continue;
+          alive = true;
+          p.px = p.x; p.py = p.y;
+          p.vx *= Math.pow(0.975, dt);
+          p.vy = p.vy * Math.pow(0.975, dt) + 0.045 * unit * dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.life -= p.fade * dt;
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(p.px, p.py);
+          ctx.lineTo(p.x, p.y);
+          ctx.stroke();
+          // A little twinkle near the end.
+          if (p.life < 0.35 && Math.random() < 0.25) ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+        }
+      }
+      if (alive && now - start < 4500) requestAnimationFrame(frame);
+      else canvas.remove();
+    }
+    requestAnimationFrame(frame);
+    // Safety net: never leave the canvas behind, even if the browser pauses animations.
+    setTimeout(() => canvas.remove(), 6000);
+  }
+
   renderChrome();
   renderMain();
+  // If the site was opened in a background tab, wait until it's actually on screen.
+  if (document.hidden) {
+    document.addEventListener("visibilitychange", function show() {
+      if (document.hidden) return;
+      document.removeEventListener("visibilitychange", show);
+      fireworks();
+    });
+  } else {
+    fireworks();
+  }
 })();

@@ -143,6 +143,16 @@ body::after {
   body::after { top: 260px; right: 0; width: 70vw; height: 290px; }
 }
 
+/* The opening fireworks: drawn over everything, never in the way of clicks. */
+.fireworks {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 [hidden] { display: none !important; }
 img { max-width: 100%; }
 a { color: inherit; }
