@@ -395,6 +395,9 @@
     return tr ? "0 €" : "€0";
   }
 
+  // A value that effects.js counts up from zero when its page opens.
+  const countingMoney = (m) => `<span class="counting" data-count="${m}">${money(m)}</span>`;
+
   function fmtDate(iso) {
     const [y, m, d] = iso.split("-").map(Number);
     return new Intl.DateTimeFormat(loc(), { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
@@ -641,7 +644,7 @@
           <div><dt>${esc(t("squadSize"))}</dt><dd>${s.size}</dd></div>
           <div><dt>${esc(t("avgAge"))}</dt><dd>${s.avgAge != null ? nf(s.avgAge, 1, 1) : "–"}</dd></div>
           <div><dt>${esc(t("foreign"))}</dt><dd>${s.foreign}</dd></div>
-          <div class="cc-total"><dt>${esc(t("totalValue"))}</dt><dd>${s.valued ? money(s.total) : "—"}</dd></div>
+          <div class="cc-total"><dt>${esc(t("totalValue"))}</dt><dd>${s.valued ? countingMoney(s.total) : "—"}</dd></div>
         </dl>
         <div class="cc-foot">${foot}<span class="cc-go" aria-hidden="true">→</span></div>
       </a>`;
@@ -657,7 +660,7 @@
       return `
         <li class="club-scope" style="${c.vars}">
           <a class="tot-name" href="#${c.id}">${badge(c, 26)}<span>${esc(c.name)}</span></a>
-          <span class="tot-val">${c.stats.valued ? money(c.stats.total) : "—"}${partial}</span>
+          <span class="tot-val">${c.stats.valued ? countingMoney(c.stats.total) : "—"}${partial}</span>
           <span class="tot-track"><i style="width:${((c.stats.total / max) * 100).toFixed(1)}%"></i></span>
         </li>`;
     }).join("");
@@ -677,7 +680,7 @@
           <button type="button" class="pname" data-player="${p.id}">${esc(p.name)}</button>
           <span class="sub">${badge(p.club, 16)}${esc(p.club.name)} · ${esc(posLabel(p.pos))}</span>
         </span>
-        <span class="top-val">${money(p.value)}</span>
+        <span class="top-val">${countingMoney(p.value)}</span>
       </li>`).join("");
     return `
       <section class="panel" aria-labelledby="top-title">
@@ -769,7 +772,7 @@
             <div><dt>${esc(t("squadSize"))}</dt><dd>${s.size}</dd></div>
             <div><dt>${esc(t("avgAge"))}</dt><dd>${s.avgAge != null ? nf(s.avgAge, 1, 1) : "–"}</dd></div>
             <div><dt>${esc(t("foreign"))}</dt><dd>${s.foreign}</dd></div>
-            <div><dt>${esc(t("totalValue"))}</dt><dd>${s.valued ? money(s.total) : "—"}</dd></div>
+            <div><dt>${esc(t("totalValue"))}</dt><dd>${s.valued ? countingMoney(s.total) : "—"}</dd></div>
           </dl>
         </section>
         ${pendingNote()}
@@ -941,7 +944,8 @@
     const p = playerById.get(id);
     if (!p) return;
     const c = p.club;
-    if (openId !== id) votes.saveError = false;
+    const fresh = openId !== id;
+    if (fresh) votes.saveError = false;
     openId = id;
     dialog.className = "player-dialog club-scope";
     dialog.setAttribute("style", c.vars);
@@ -980,6 +984,7 @@
     if (!dialog.open) dialog.showModal();
     const close = dialog.querySelector(".pm-close");
     if (close) close.focus();
+    if (fresh && window.MVFx) MVFx.flip(dialog.querySelector(".pm-value strong:not(.none)"));
     if (SHARED && Date.now() - votes.loadedAt > 60000) loadVotes();
   }
 
@@ -1380,6 +1385,15 @@
     if (key !== lastPageKey) {
       if (lastPageKey !== null) window.scrollTo(0, 0);
       lastPageKey = key;
+      if (window.MVFx) {
+        const main = $("#main");
+        MVFx.enter(main);
+        MVFx.countUp(main, money);
+        if (route.page === "club") {
+          const c = route.club;
+          MVFx.confetti([c.colors.main, c.colors.second], main.querySelector(".club-band .badge, .club-band svg"));
+        }
+      }
       // Fetch everyone's guesses each time the predictions page is opened.
       if (route.page === "predictions" && SHARED) loadSharedGuesses();
     }
@@ -1581,6 +1595,15 @@
     setTimeout(() => canvas.remove(), 6000);
   }
 
+  // Opening show: the floodlights come on, a ball rolls up to the logo, then the two fireworks go off.
+  function opening() {
+    if (window.MVFx) {
+      MVFx.floodlights();
+      MVFx.rollingBall();
+    }
+    setTimeout(fireworks, window.MVFx ? 700 : 0);
+  }
+
   renderChrome();
   renderMain();
   // If the site was opened in a background tab, wait until it's actually on screen.
@@ -1588,9 +1611,9 @@
     document.addEventListener("visibilitychange", function show() {
       if (document.hidden) return;
       document.removeEventListener("visibilitychange", show);
-      fireworks();
+      opening();
     });
   } else {
-    fireworks();
+    opening();
   }
 })();

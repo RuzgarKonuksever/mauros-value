@@ -1559,6 +1559,67 @@ main { display: block; padding-block: 28px 72px; }
 .foot-brand .brand-mark { width: 26px; height: 26px; border-radius: 7px; }
 .foot-brand .brand-mark svg { width: 16px; height: 16px; }
 
+/* ---------- Effects (effects.js) ---------- */
+
+.fx-lights {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  pointer-events: none;
+}
+
+.fx-dim,
+.fx-lamp { position: absolute; inset: 0; }
+.fx-dim { background: rgb(4 8 6 / 0.68); }
+.fx-lamp { opacity: 0; }
+
+.fx-lamp-l {
+  background:
+    radial-gradient(circle at 0% 0%, rgb(255 255 245 / 0.95), rgb(255 255 245 / 0) 9%),
+    radial-gradient(ellipse 70% 80% at 0% 0%, rgb(255 253 230 / 0.6), rgb(255 253 230 / 0.15) 45%, transparent 75%);
+}
+
+.fx-lamp-r {
+  background:
+    radial-gradient(circle at 100% 0%, rgb(255 255 245 / 0.95), rgb(255 255 245 / 0) 9%),
+    radial-gradient(ellipse 70% 80% at 100% 0%, rgb(255 253 230 / 0.6), rgb(255 253 230 / 0.15) 45%, transparent 75%);
+}
+
+.fx-ball {
+  position: absolute;
+  z-index: 61;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.35));
+}
+
+.fx-ball svg { display: block; width: 100%; height: 100%; }
+
+.fx-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.counting { font-variant-numeric: tabular-nums; }
+.tot-track i { transform-origin: left center; }
+
+.fx-flip { display: inline-block; perspective: 420px; }
+.fx-ch { display: inline-block; backface-visibility: hidden; }
+
+.fx-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 /* ---------- Cookie notice (analytics.js, public site only) ---------- */
 
 .consent {
