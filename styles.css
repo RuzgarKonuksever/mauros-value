@@ -140,7 +140,7 @@ body::after {
   width: min(42vw, 470px);
   height: 490px;
   pointer-events: none;
-  background: url("images/bg/mauro.png") right top / contain no-repeat;
+  background: url("images/bg/icardi-free.png") right top / contain no-repeat;
   mix-blend-mode: luminosity;
   opacity: var(--mauro-opacity);
 }

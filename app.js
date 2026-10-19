@@ -155,6 +155,7 @@
       noLeaders: "Nothing to show yet.",
       footerNote: "A fan-made site. Every market value here is our own estimate. Not affiliated with any club or with Transfermarkt.",
       footerPhotos: "Player photos come from Wikimedia Commons under free licences. Each player's popup credits the photographer.",
+      footerBg: "Background photo of Mauro Icardi: Vyacheslav Evdokimov (edited), {license}, Wikimedia Commons.",
       footerStats: "Match stats: {source}, updated {date}.",
       footerUpdated: "Last updated {date}.",
       cookieSettings: "Cookie settings"
@@ -302,6 +303,7 @@
       noLeaders: "Henüz gösterilecek veri yok.",
       footerNote: "Taraftar yapımı bir sitedir. Buradaki tüm piyasa değerleri kendi tahminimizdir. Hiçbir kulüp veya Transfermarkt ile bağlantısı yoktur.",
       footerPhotos: "Oyuncu fotoğrafları özgür lisanslarla Wikimedia Commons'tan alınmıştır. Fotoğrafçı bilgisi her oyuncunun penceresinde yer alır.",
+      footerBg: "Arka plandaki Mauro Icardi fotoğrafı: Vyacheslav Evdokimov (düzenlenmiş), {license}, Wikimedia Commons.",
       footerStats: "Maç istatistikleri: {source}, son güncelleme {date}.",
       footerUpdated: "Son güncelleme: {date}.",
       cookieSettings: "Çerez ayarları"
@@ -1649,6 +1651,7 @@
         <div class="foot-brand"><span class="brand-mark">${MARK}</span>Mauro's Value</div>
         <p>${esc(t("footerNote"))}</p>
         ${players.some((p) => p.credit) ? `<p>${esc(t("footerPhotos"))}</p>` : ""}
+        <p>${esc(t("footerBg")).replace("{license}", '<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>').replace("Wikimedia Commons", '<a href="https://commons.wikimedia.org/wiki/File:Zen-Int_(2)_-_Mauro_Icardi_(cropped).jpg" target="_blank" rel="noopener">Wikimedia Commons</a>')}</p>
         ${STATS.updated && STATS.source ? `<p>${esc(t("footerStats", { source: STATS.source, date: fmtDate(STATS.updated) }))}</p>` : ""}
         <p>${esc(t("footerUpdated", { date: fmtDate(DATA.updated) }))}</p>
         ${window.MVAnalytics ? `<p><button type="button" class="link" data-action="cookie-settings">${esc(t("cookieSettings"))}</button></p>` : ""}

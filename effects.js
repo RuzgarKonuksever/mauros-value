@@ -68,17 +68,24 @@
     }
     const size = Math.min(22, room - 12);
     if (size < 14) return;
+    // The ball lives inside the top bar, so it stays beside the name even when the page opens scrolled down
+    // (the header is sticky on computers).
+    const bar = brand && brand.parentElement;
+    if (!bar) return;
+    const b = bar.getBoundingClientRect();
     const ball = document.createElement("span");
     ball.className = "fx-ball";
     ball.innerHTML = BALL;
     ball.style.width = ball.style.height = size + "px";
-    ball.style.left = r.right + Math.min(10, (room - size) / 2) + "px";
-    ball.style.top = r.top + window.scrollY + r.height / 2 - size / 2 + "px";
-    document.body.appendChild(ball);
-    const distance = Math.max(200, window.innerWidth - r.right);
+    const left = r.right - b.left + Math.min(10, (room - size) / 2);
+    ball.style.left = left + "px";
+    ball.style.top = r.top - b.top + r.height / 2 - size / 2 + "px";
+    bar.appendChild(ball);
+    // Start just inside the right edge of the screen (starting off-screen would briefly add a sideways scrollbar).
+    const distance = Math.max(0, window.innerWidth - b.left - left - size - 4);
     const degrees = (distance / (Math.PI * size)) * 360;
     const roll = ball.animate(
-      [{ transform: `translateX(${distance}px) rotate(${degrees}deg)` }, { transform: "none" }],
+      [{ transform: `translateX(${distance}px) rotate(${degrees}deg)`, opacity: 0 }, { opacity: 1, offset: 0.08 }, { transform: "none", opacity: 1 }],
       { duration: 1700, delay: 250, easing: "cubic-bezier(.12, .62, .3, 1)", fill: "both" }
     );
     roll.finished
