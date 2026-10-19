@@ -42,15 +42,18 @@
     '<path d="M25 3l7 5 7-5-2-6H27zM55 15l-1.5 9.5 8 4.5 4-8-4-8zM9 15l1.5 9.5-8 4.5-4-8 4-8zM50 63l-5-11 9-5 8 9-3 9zM14 63l5-11-9-5-8 9 3 9z"/>' +
     '</g><circle cx="32" cy="32" r="29" fill="none" stroke="#111" stroke-width="2.5"/></svg>';
 
-  function rollingBall() {
+  function rollingBall(fontReady) {
     if (calm()) return;
-    // Measure only once the site's font has loaded; the fallback font is wider and would put the ball in the wrong place.
-    if (document.fonts && document.fonts.status !== "loaded") {
-      document.fonts.ready.then(() => rollingBall());
-      return;
-    }
     const name = document.querySelector(".brand-name");
     if (!name) return;
+    // Measure only once the logo's own font has loaded; the fallback font is wider and would put the ball in the wrong place.
+    if (!fontReady && document.fonts && document.fonts.load) {
+      const font = getComputedStyle(name).font;
+      Promise.race([document.fonts.load(font, name.textContent), new Promise((r) => setTimeout(r, 2500))])
+        .catch(() => {})
+        .then(() => rollingBall(true));
+      return;
+    }
     // Measure the text itself: the name's box can be as wide as the tagline under it.
     const range = document.createRange();
     range.selectNodeContents(name);

@@ -999,11 +999,16 @@
     const { m, club } = best;
     const side = (name) => {
       const c = ourClub(name);
-      return `<span class="nb-team">${c ? badge(c, 20) : ""}${esc(teamName(name))}</span>`;
+      return `<span class="nb-team">${c ? badge(c, 30) : ""}${esc(teamName(name))}</span>`;
     };
+    // The banner fades from the home club's colour to the away club's (our club's colour stands in for other teams).
+    const home = ourClub(m.home) || club;
+    const away = ourClub(m.away) || club;
+    bar.style.setProperty("--nb-home", home.colors.main);
+    bar.style.setProperty("--nb-away", away.colors.main);
     bar.innerHTML = `
       <a class="nb-inner" href="#${club.id}">
-        <span class="nb-label">${esc(t("nextTitle"))}</span>
+        <span class="nb-label"><i class="nb-pulse" aria-hidden="true"></i>${esc(t("nextTitle"))}</span>
         <span class="nb-match">${side(m.home)}<span class="nb-dash">–</span>${side(m.away)}</span>
         <span class="nb-when">${compLogoImg(m.comp)}${esc(compName(m.comp))} · ${esc(kickoffText(m.kickoff))}</span>
         <span class="countdown nb-cd" data-countdown="${esc(m.kickoff)}">${countdownHtml(m.kickoff)}</span>
