@@ -6,6 +6,7 @@
   const PHOTOS = window.GD_PHOTOS || {};
   const STATS = window.GD_STATS || {};
   const STAT_ROWS = STATS.players || {};
+  const HISTORY = (window.GD_HISTORY && window.GD_HISTORY.players) || {};
   const $ = (sel) => document.querySelector(sel);
 
   /* ---------- Text ---------- */
@@ -124,6 +125,12 @@
       statsUpdated: "Updated {date}",
       statsNone: "no stats found for this player",
       sectionScorers: "Top scorers",
+      sectionRisers: "Biggest risers",
+      sectionFallers: "Biggest fallers",
+      changeNote: "vs. previous value",
+      changeUp: "Value went up",
+      changeDown: "Value went down",
+      changeWas: "Previously {v} · changed {date}",
       sectionAssists: "Most assists",
       goal1: "goal",
       goalN: "goals",
@@ -251,6 +258,12 @@
       statsUpdated: "Güncelleme: {date}",
       statsNone: "bu oyuncu için veri bulunamadı",
       sectionScorers: "Gol krallığı",
+      sectionRisers: "En çok yükselenler",
+      sectionFallers: "En çok düşenler",
+      changeNote: "önceki değere göre",
+      changeUp: "Değeri yükseldi",
+      changeDown: "Değeri düştü",
+      changeWas: "Önceki değer: {v} · değişiklik: {date}",
       sectionAssists: "Asist krallığı",
       goal1: "gol",
       goalN: "gol",
@@ -501,7 +514,8 @@
         value: toNumber(p.value),
         photo: own || (free ? free.file : ""),
         credit: free,
-        stats: STAT_ROWS[key] || null
+        stats: STAT_ROWS[key] || null,
+        change: lastChange(HISTORY[key], toNumber(p.value))
       };
     });
     return club;
@@ -578,7 +592,28 @@
       return `<span class="no-val" title="${esc(t("notValued"))}">—<span class="vh">${esc(t("notValued"))}</span></span>`;
     }
     const width = MAX_VALUE ? Math.max(3, (p.value / MAX_VALUE) * 100) : 0;
-    return `<span class="amt">${money(p.value)}</span><span class="vbar" aria-hidden="true"><i style="width:${width.toFixed(1)}%"></i></span>`;
+    return `<span class="amt">${money(p.value)}${changeTag(p)}</span><span class="vbar" aria-hidden="true"><i style="width:${width.toFixed(1)}%"></i></span>`;
+  }
+
+  // The latest change in a player's value history (history.js), as long as it's still their current value.
+  function lastChange(list, value) {
+    if (!Array.isArray(list) || list.length < 2 || value == null) return null;
+    const [date, to] = list[list.length - 1];
+    const from = list[list.length - 2][1];
+    if (Math.abs(to - value) > 0.0005 || Math.abs(to - from) < 0.0005) return null;
+    return { from, to, diff: to - from, date };
+  }
+
+  // Green up / red down arrow. Short form (tables) is just the arrow with the details in its tooltip.
+  function changeTag(p, full) {
+    const ch = p.change;
+    if (!ch) return "";
+    const up = ch.diff > 0;
+    const arrow = up ? "▲" : "▼";
+    const amount = (up ? "+" : "−") + money(Math.abs(ch.diff));
+    if (full) return `<span class="chg ${up ? "up" : "down"}"><span aria-hidden="true">${arrow}</span> ${esc(amount)}</span>`;
+    const label = `${t(up ? "changeUp" : "changeDown")} (${amount}). ${t("changeWas", { v: money(ch.from), date: fmtDate(ch.date) })}`;
+    return `<span class="chg ${up ? "up" : "down"}" title="${esc(label)}"><span aria-hidden="true">${arrow}</span><span class="vh">${esc(label)}</span></span>`;
   }
 
   function pendingNote() {
@@ -680,7 +715,7 @@
           <button type="button" class="pname" data-player="${p.id}">${esc(p.name)}</button>
           <span class="sub">${badge(p.club, 16)}${esc(p.club.name)} · ${esc(posLabel(p.pos))}</span>
         </span>
-        <span class="top-val">${countingMoney(p.value)}</span>
+        <span class="top-val">${countingMoney(p.value)}${changeTag(p)}</span>
       </li>`).join("");
     return `
       <section class="panel" aria-labelledby="top-title">
@@ -722,6 +757,34 @@
       </section>`;
   }
 
+  // Top 5 risers (dir 1) or fallers (dir -1) by their latest value change.
+  function changePanel(dir) {
+    const list = players
+      .filter((p) => p.change && Math.sign(p.change.diff) === dir)
+      .sort((a, b) => Math.abs(b.change.diff) - Math.abs(a.change.diff) || b.value - a.value)
+      .slice(0, 5);
+    if (!list.length) return "";
+    const id = dir > 0 ? "risers-title" : "fallers-title";
+    const items = list.map((p, i) => `
+      <li class="club-scope" data-player="${p.id}" style="${p.club.vars}">
+        <span class="top-rank">${i + 1}</span>
+        ${avatar(p)}
+        <span class="top-who">
+          <button type="button" class="pname" data-player="${p.id}">${esc(p.name)}</button>
+          <span class="sub">${badge(p.club, 16)}${esc(money(p.change.from))} → ${esc(money(p.change.to))}</span>
+        </span>
+        <span class="top-val">${changeTag(p, true)}</span>
+      </li>`).join("");
+    return `
+      <section class="panel" aria-labelledby="${id}">
+        <div class="panel-head">
+          <h2 id="${id}">${esc(t(dir > 0 ? "sectionRisers" : "sectionFallers"))}</h2>
+          <span class="panel-note">${esc(t("changeNote"))}</span>
+        </div>
+        <ol class="top">${items}</ol>
+      </section>`;
+  }
+
   function homePage() {
     const lower = valued.length
       ? `<div class="split">${totalsPanel()}${topPanel()}</div>`
@@ -732,6 +795,7 @@
     const leaders = STATS.updated
       ? `<div class="split split-even">${leaderPanel("goals", "sectionScorers", "goal1", "goalN")}${leaderPanel("assists", "sectionAssists", "assist1", "assistN")}</div>`
       : "";
+    const changes = changePanel(1) + changePanel(-1);
     return `
       <section class="hero">
         <p class="eyebrow">Süper Lig · ${esc(DATA.season)}</p>
@@ -744,6 +808,7 @@
         <div class="club-grid">${clubs.map(clubCard).join("")}</div>
       </section>
       ${lower}
+      ${changes ? `<div class="split split-even">${changes}</div>` : ""}
       ${leaders}`;
   }
 
@@ -949,8 +1014,11 @@
     openId = id;
     dialog.className = "player-dialog club-scope";
     dialog.setAttribute("style", c.vars);
+    const change = p.change
+      ? `<span class="pm-change">${changeTag(p, true)}<span>${esc(t("changeWas", { v: money(p.change.from), date: fmtDate(p.change.date) }))}</span></span>`
+      : "";
     const value = p.value != null
-      ? `<strong>${money(p.value)}</strong><span class="ranks">${esc(t("rankClub", { n: p.clubRank }))} · ${esc(t("rankAll", { n: p.rank }))}</span>`
+      ? `<strong>${money(p.value)}</strong>${change}<span class="ranks">${esc(t("rankClub", { n: p.clubRank }))} · ${esc(t("rankAll", { n: p.rank }))}</span>`
       : `<strong class="none">—</strong><span class="ranks">${esc(t("notValued"))}</span>`;
     const nats = p.nat.map((n) => `<span class="nat-line">${flag(n)}${esc(countryName(n))}</span>`).join("") || "–";
     const link = (href, text) => (href ? `<a href="${esc(href)}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text));

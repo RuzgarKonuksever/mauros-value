@@ -23,6 +23,8 @@
   --dark-pct: 0%;
   --card-yellow: #F2C200;
   --card-red: #D62839;
+  --up: #138A4A;
+  --down: #D02A3A;
   --grass-stripe: #EAF0E9;
   --pitch-line: rgb(11 116 68 / 0.18);
   --mauro-opacity: 0.17;
@@ -60,6 +62,8 @@
     --pitch-line: rgb(255 255 255 / 0.08);
     --mauro-opacity: 0.1;
     --logo-outline: drop-shadow(0 0 1px rgb(255 255 255 / 0.75));
+    --up: #4CD48E;
+    --down: #FF6B78;
     color-scheme: dark;
   }
 }
@@ -86,6 +90,8 @@
   --pitch-line: rgb(255 255 255 / 0.08);
   --mauro-opacity: 0.1;
   --logo-outline: drop-shadow(0 0 1px rgb(255 255 255 / 0.75));
+  --up: #4CD48E;
+  --down: #FF6B78;
   color-scheme: dark;
 }
 
@@ -1343,6 +1349,23 @@ main { display: block; padding-block: 28px 72px; }
 }
 
 .pm-value-main { display: grid; gap: 3px; }
+
+/* Value change arrows (history.js). */
+.chg { margin-left: 6px; font-size: 0.8em; font-weight: 700; white-space: nowrap; }
+.chg.up { color: var(--up); }
+.chg.down { color: var(--down); }
+.top-val .chg:only-child { margin-left: 0; font-size: 1em; }
+
+.pm-change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.pm-change .chg { margin-left: 0; font-size: 14px; }
 
 /* "Is this value right?" votes, beside the value (below it when there's no room). */
 .pm-vote { flex: 1 1 240px; display: grid; gap: 6px; }
