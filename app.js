@@ -125,6 +125,20 @@
       statsUpdated: "Updated {date}",
       statsNone: "no stats found for this player",
       sectionScorers: "Top scorers",
+      formTitle: "Last 5 matches",
+      formLetter_w: "W",
+      formLetter_d: "D",
+      formLetter_l: "L",
+      form_w: "Win",
+      form_d: "Draw",
+      form_l: "Loss",
+      nextTitle: "Next match",
+      liveNow: "Match in progress",
+      cdUnits: "d,h,m,s",
+      formNote: "Results are added with the weekly update.",
+      bdayButton: "Today's birthdays",
+      bdayTitle: "Happy birthday!",
+      bdayLine: "turns {n} today",
       sectionRisers: "Biggest risers",
       sectionFallers: "Biggest fallers",
       changeNote: "vs. previous value",
@@ -258,6 +272,20 @@
       statsUpdated: "Güncelleme: {date}",
       statsNone: "bu oyuncu için veri bulunamadı",
       sectionScorers: "Gol krallığı",
+      formTitle: "Son 5 maç",
+      formLetter_w: "G",
+      formLetter_d: "B",
+      formLetter_l: "M",
+      form_w: "Galibiyet",
+      form_d: "Beraberlik",
+      form_l: "Mağlubiyet",
+      nextTitle: "Sıradaki maç",
+      liveNow: "Maç oynanıyor",
+      cdUnits: "g,sa,dk,sn",
+      formNote: "Sonuçlar haftalık güncellemeyle eklenir.",
+      bdayButton: "Bugün doğum günü olanlar",
+      bdayTitle: "İyi ki doğdun!",
+      bdayLine: "bugün {n} yaşında",
       sectionRisers: "En çok yükselenler",
       sectionFallers: "En çok düşenler",
       changeNote: "önceki değere göre",
@@ -386,6 +414,60 @@
   }
 
   if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener("change", renderThemeButton);
+
+  // Birthday corner: a black-and-white cake button beside the theme button that only appears when a player's
+  // birthday is today (Turkey time). It opens a small list of today's birthdays.
+  const CAKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8c1 1 1.3 2 .9 2.7a1 1 0 0 1-1.8 0c-.4-.7-.1-1.7.9-2.7z" fill="currentColor"/><path d="M12 7.6v2.4"/><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M4 14.5q2 1.5 4 0t4 0t4 0t4 0"/></svg>';
+
+  function birthdaysToday() {
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const [y, mo, d] = today.split("-").map(Number);
+    const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+    return players
+      .filter((p) => {
+        if (!p.born) return false;
+        const [, bm, bd] = p.born.split("-").map(Number);
+        // Players born on 29 February celebrate on the 28th in other years.
+        return (bm === mo && bd === d) || (!leap && bm === 2 && bd === 29 && mo === 2 && d === 28);
+      })
+      .map((p) => ({ p, age: y - Number(p.born.slice(0, 4)) }));
+  }
+
+  function renderBirthday() {
+    const btn = document.getElementById("bday");
+    const pop = document.getElementById("bday-pop");
+    if (!btn || !pop) return;
+    const list = birthdaysToday();
+    btn.hidden = !list.length;
+    if (!list.length) {
+      pop.hidden = true;
+      return;
+    }
+    btn.innerHTML = CAKE;
+    btn.setAttribute("aria-label", t("bdayButton"));
+    btn.title = t("bdayButton");
+    pop.setAttribute("aria-label", t("bdayButton"));
+    pop.innerHTML = `
+      <p class="bday-title">${CAKE}${esc(t("bdayTitle"))}</p>
+      <ul>${list.map(({ p, age }) => `
+        <li class="club-scope" style="${p.club.vars}">
+          ${avatar(p)}
+          <span class="top-who">
+            <button type="button" class="pname" data-player="${p.id}">${esc(p.name)}</button>
+            <span class="sub">${badge(p.club, 16)}${esc(p.club.name)} · ${esc(t("bdayLine", { n: age }))}</span>
+          </span>
+        </li>`).join("")}
+      </ul>`;
+  }
+
+  function toggleBirthdays(open) {
+    const btn = document.getElementById("bday");
+    const pop = document.getElementById("bday-pop");
+    if (!btn || !pop || btn.hidden) return;
+    const show = open ?? pop.hidden;
+    pop.hidden = !show;
+    btn.setAttribute("aria-expanded", String(show));
+  }
 
   const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -812,6 +894,89 @@
       ${leaders}`;
   }
 
+  /* ---------- Club pages: last 5 results and the next-match countdown (fixtures.js "clubs") ---------- */
+
+  const CLUB_FORM = (window.GD_FIXTURES || {}).clubs || {};
+  // The data provider writes Turkish club names without Turkish letters.
+  const TEAM_NAMES = {
+    Fenerbahce: "Fenerbahçe", Besiktas: "Beşiktaş", Genclerbirligi: "Gençlerbirliği", Kasimpasa: "Kasımpaşa",
+    Eyupspor: "Eyüpspor", Goztepe: "Göztepe", Basaksehir: "Başakşehir", "Istanbul Basaksehir": "İstanbul Başakşehir",
+    Karagumruk: "Karagümrük", "Fatih Karagumruk": "Fatih Karagümrük", "Caykur Rizespor": "Çaykur Rizespor"
+  };
+  const teamName = (n) => TEAM_NAMES[n] || n;
+  const MATCH_LENGTH = 2 * 60 * 60 * 1000;
+  const shortDate = (iso) => new Intl.DateTimeFormat(loc(), { day: "numeric", month: "short" }).format(new Date(iso));
+
+  function resultOf(m) {
+    const us = m.ourSide === "home" ? m.hs : m.as;
+    const them = m.ourSide === "home" ? m.as : m.hs;
+    return us > them ? "w" : us < them ? "l" : "d";
+  }
+
+  // The first scheduled match that hasn't finished yet (the data is refreshed weekly, so skip ones already played).
+  function nextMatch(c) {
+    const now = Date.now();
+    return ((CLUB_FORM[c.id] || {}).next || []).find((m) => Date.parse(m.kickoff) + MATCH_LENGTH > now) || null;
+  }
+
+  function compLogoImg(id) {
+    const logo = ((STATS.competitions || {})[id] || {}).logo;
+    return logo ? `<span class="comp-logo"><img src="${esc(assetUrl(logo))}" alt="" loading="lazy"></span>` : "";
+  }
+
+  function countdownHtml(iso) {
+    const left = Date.parse(iso) - Date.now();
+    if (left <= 0) return `<span class="cd-live">${esc(t("liveNow"))}</span>`;
+    const units = t("cdUnits").split(",");
+    const sec = Math.floor(left / 1000);
+    const parts = [Math.floor(sec / 86400), Math.floor(sec / 3600) % 24, Math.floor(sec / 60) % 60, sec % 60];
+    return parts.map((n, i) => `<span class="cd-part"><b>${i ? String(n).padStart(2, "0") : n}</b>${esc(units[i])}</span>`).join("");
+  }
+
+  function matchStrip(c) {
+    const form = CLUB_FORM[c.id];
+    if (!form) return "";
+    const results = (form.last || []).map((m) => {
+      const r = resultOf(m);
+      const home = m.ourSide === "home";
+      const us = home ? m.hs : m.as;
+      const them = home ? m.as : m.hs;
+      const opponent = teamName(home ? m.away : m.home);
+      const label = `${t("form_" + r)}: ${teamName(m.home)} ${m.hs}–${m.as} ${teamName(m.away)} · ${compName(m.comp)} · ${shortDate(m.kickoff)}`;
+      return `
+        <li class="fm fm-${r}" title="${esc(label)}">
+          <span class="fm-dot" aria-hidden="true">${esc(t("formLetter_" + r))}</span>
+          <span class="fm-score" aria-hidden="true">${us}–${them}</span>
+          <span class="fm-opp" aria-hidden="true">${esc(opponent)}</span>
+          <span class="vh">${esc(label)}</span>
+        </li>`;
+    }).join("");
+    const next = nextMatch(c);
+    const nextBox = next ? `
+      <div class="next-match">
+        <p class="strip-title">${esc(t("nextTitle"))}</p>
+        <p class="nm-teams">${compLogoImg(next.comp)}<span>${esc(teamName(next.home))} – ${esc(teamName(next.away))}</span></p>
+        <p class="nm-when">${esc(compName(next.comp))} · ${esc(kickoffText(next.kickoff))}</p>
+        <p class="countdown" data-countdown="${esc(next.kickoff)}">${countdownHtml(next.kickoff)}</p>
+      </div>` : "";
+    if (!results && !nextBox) return "";
+    return `
+      <section class="match-strip club-scope" style="${c.vars}">
+        ${results ? `
+        <div class="form">
+          <p class="strip-title">${esc(t("formTitle"))}</p>
+          <ol class="form-list">${results}</ol>
+          <p class="strip-note">${esc(t("formNote"))}</p>
+        </div>` : ""}
+        ${nextBox}
+      </section>`;
+  }
+
+  // Tick every countdown on the page once a second.
+  setInterval(() => {
+    document.querySelectorAll("[data-countdown]").forEach((el) => { el.innerHTML = countdownHtml(el.dataset.countdown); });
+  }, 1000);
+
   function clubPage(c) {
     const s = c.stats;
     const list = c.players.slice().sort(SORTS[state.clubSort] || SORTS.pos);
@@ -840,6 +1005,7 @@
             <div><dt>${esc(t("totalValue"))}</dt><dd>${s.valued ? countingMoney(s.total) : "—"}</dd></div>
           </dl>
         </section>
+        ${matchStrip(c)}
         ${pendingNote()}
         <div class="toolbar">
           <h2>${esc(t("squad"))} <span class="count">${esc(t("playersCount", { n: s.size }))}</span></h2>
@@ -1418,6 +1584,7 @@
     $("#lang").setAttribute("aria-label", t("language"));
     document.querySelectorAll("#lang [data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     renderThemeButton();
+    renderBirthday();
     $("#footer").innerHTML = `
       <div class="foot-inner">
         <div class="foot-brand"><span class="brand-mark">${MARK}</span>Mauro's Value</div>
@@ -1496,6 +1663,13 @@
       return;
     }
 
+    if (el.closest("#bday")) {
+      toggleBirthdays();
+      return;
+    }
+    // Any other click closes the birthday list (a name in it still opens that player below).
+    if (!el.closest("#bday-pop") || el.closest("[data-player]")) toggleBirthdays(false);
+
     const voteButton = el.closest("[data-vote]");
     if (voteButton && openId) {
       castVote(playerById.get(openId), Number(voteButton.dataset.vote));
@@ -1552,6 +1726,7 @@
   });
 
   document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") toggleBirthdays(false);
     if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey || dialog.open) return;
     const tag = document.activeElement ? document.activeElement.tagName : "";
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
