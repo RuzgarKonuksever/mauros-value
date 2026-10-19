@@ -1016,6 +1016,18 @@
       </a>`;
   }
 
+  // The faded Icardi picture in the background starts just below the header and next-match bar, whose height
+  // changes with the screen width, so his face is never hidden behind them.
+  function placeBackdrop() {
+    const bar = document.getElementById("next-bar");
+    const ref = bar && !bar.hidden ? bar : document.querySelector(".site-header");
+    if (!ref) return;
+    const bottom = ref.getBoundingClientRect().bottom + window.scrollY;
+    document.body.style.setProperty("--mauro-top", Math.round(bottom + 14) + "px");
+  }
+  window.addEventListener("resize", placeBackdrop);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeBackdrop);
+
   // Tick every countdown on the page once a second, and move the top bar on once a match is over.
   setInterval(() => {
     document.querySelectorAll("[data-countdown]").forEach((el) => { el.innerHTML = countdownHtml(el.dataset.countdown); });
@@ -1631,6 +1643,7 @@
     renderThemeButton();
     renderBirthday();
     renderNextBar();
+    placeBackdrop();
     $("#footer").innerHTML = `
       <div class="foot-inner">
         <div class="foot-brand"><span class="brand-mark">${MARK}</span>Mauro's Value</div>

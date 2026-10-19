@@ -133,7 +133,8 @@ body::before {
 body::after {
   content: "";
   position: absolute;
-  top: 96px;
+  /* app.js sets --mauro-top to just below the header and next-match bar. */
+  top: var(--mauro-top, 170px);
   right: max(2vw, calc((100vw - 1180px) / 2));
   z-index: -1;
   width: min(42vw, 470px);
@@ -146,7 +147,7 @@ body::after {
 
 @media (max-width: 720px) {
   /* The phone header is taller (search on its own row), so start below it. */
-  body::after { top: 260px; right: 0; width: 70vw; height: 290px; }
+  body::after { top: var(--mauro-top, 320px); right: 0; width: 70vw; height: 290px; }
 }
 
 /* The opening fireworks: drawn over everything, never in the way of clicks. */
