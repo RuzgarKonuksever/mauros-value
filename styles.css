@@ -1631,6 +1631,61 @@ main { display: block; padding-block: 28px 72px; }
 .foot-brand .brand-mark { width: 26px; height: 26px; border-radius: 7px; }
 .foot-brand .brand-mark svg { width: 16px; height: 16px; }
 
+/* ---------- Next match bar under the header (any of the four clubs) ---------- */
+
+.next-bar {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.next-bar[hidden] { display: none; }
+
+.nb-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  max-width: var(--wrap);
+  margin-inline: auto;
+  padding: 8px var(--gutter);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nb-inner:hover .nb-match { text-decoration: underline; text-underline-offset: 3px; }
+
+.nb-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.nb-match {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 800 18px/1.1 var(--font-display);
+  text-transform: uppercase;
+}
+
+.nb-team { display: inline-flex; align-items: center; gap: 6px; }
+.nb-dash { color: var(--muted); }
+
+.nb-when { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.nb-when .comp-logo,
+.nb-when .comp-logo img { width: 18px; height: 18px; }
+
+.nb-cd { margin-left: auto; gap: 4px; }
+.nb-cd .cd-part { padding: 3px 7px; font-size: 11px; }
+.nb-cd .cd-part b { font-size: 17px; color: var(--ink); }
+.nb-cd .cd-live { padding: 4px 10px; font-size: 13px; }
+
+@media (max-width: 720px) {
+  .nb-cd { margin-left: 0; }
+}
+
 /* ---------- Club page: last 5 results and next-match countdown ---------- */
 
 .match-strip {

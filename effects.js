@@ -44,17 +44,32 @@
 
   function rollingBall() {
     if (calm()) return;
+    // Measure only once the site's font has loaded; the fallback font is wider and would put the ball in the wrong place.
+    if (document.fonts && document.fonts.status !== "loaded") {
+      document.fonts.ready.then(() => rollingBall());
+      return;
+    }
     const name = document.querySelector(".brand-name");
     if (!name) return;
     // Measure the text itself: the name's box can be as wide as the tagline under it.
     const range = document.createRange();
     range.selectNodeContents(name);
     const r = range.getBoundingClientRect();
-    const size = 22;
+    // On phones the language buttons sit close to the name, so the ball shrinks to fit the gap (or stays away).
+    const brand = name.closest(".brand");
+    let room = window.innerWidth - r.right;
+    for (const el of (brand && brand.parentElement ? brand.parentElement.children : [])) {
+      if (el === brand || el.hidden) continue;
+      const b = el.getBoundingClientRect();
+      if (b.width && b.left >= r.right && b.top < r.bottom && b.bottom > r.top) room = Math.min(room, b.left - r.right);
+    }
+    const size = Math.min(22, room - 12);
+    if (size < 14) return;
     const ball = document.createElement("span");
     ball.className = "fx-ball";
     ball.innerHTML = BALL;
-    ball.style.left = r.right + 10 + "px";
+    ball.style.width = ball.style.height = size + "px";
+    ball.style.left = r.right + Math.min(10, (room - size) / 2) + "px";
     ball.style.top = r.top + window.scrollY + r.height / 2 - size / 2 + "px";
     document.body.appendChild(ball);
     const distance = Math.max(200, window.innerWidth - r.right);

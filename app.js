@@ -972,10 +972,49 @@
       </section>`;
   }
 
-  // Tick every countdown on the page once a second.
+  // The bar under the header: the soonest match of any of the four clubs (a derby counts once).
+  function closestMatch() {
+    const now = Date.now();
+    let best = null;
+    for (const c of clubs) {
+      for (const m of (CLUB_FORM[c.id] || {}).next || []) {
+        const at = Date.parse(m.kickoff);
+        if (at + MATCH_LENGTH > now && (!best || at < Date.parse(best.m.kickoff))) best = { m, club: c };
+      }
+    }
+    return best;
+  }
+
+  const ourClub = (name) => clubs.find((c) => fold(c.name) === fold(teamName(name)));
+
+  function renderNextBar() {
+    const bar = document.getElementById("next-bar");
+    if (!bar) return;
+    const best = closestMatch();
+    bar.hidden = !best;
+    if (!best) {
+      bar.innerHTML = "";
+      return;
+    }
+    const { m, club } = best;
+    const side = (name) => {
+      const c = ourClub(name);
+      return `<span class="nb-team">${c ? badge(c, 20) : ""}${esc(teamName(name))}</span>`;
+    };
+    bar.innerHTML = `
+      <a class="nb-inner" href="#${club.id}">
+        <span class="nb-label">${esc(t("nextTitle"))}</span>
+        <span class="nb-match">${side(m.home)}<span class="nb-dash">–</span>${side(m.away)}</span>
+        <span class="nb-when">${compLogoImg(m.comp)}${esc(compName(m.comp))} · ${esc(kickoffText(m.kickoff))}</span>
+        <span class="countdown nb-cd" data-countdown="${esc(m.kickoff)}">${countdownHtml(m.kickoff)}</span>
+      </a>`;
+  }
+
+  // Tick every countdown on the page once a second, and move the top bar on once a match is over.
   setInterval(() => {
     document.querySelectorAll("[data-countdown]").forEach((el) => { el.innerHTML = countdownHtml(el.dataset.countdown); });
   }, 1000);
+  setInterval(renderNextBar, 60000);
 
   function clubPage(c) {
     const s = c.stats;
@@ -1585,6 +1624,7 @@
     document.querySelectorAll("#lang [data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     renderThemeButton();
     renderBirthday();
+    renderNextBar();
     $("#footer").innerHTML = `
       <div class="foot-inner">
         <div class="foot-brand"><span class="brand-mark">${MARK}</span>Mauro's Value</div>
