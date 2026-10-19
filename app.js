@@ -95,6 +95,17 @@
       nationality: "Nationality",
       position: "Position",
       marketValue: "Market value",
+      voteQuestion: "Is this value right?",
+      voteLow: "Too low",
+      voteFair: "Fair",
+      voteHigh: "Too high",
+      voteCount: "Fan votes: {n}",
+      voteFirst: "No votes yet. Be the first!",
+      voteLoading: "Loading votes…",
+      voteError: "Votes couldn't be loaded right now.",
+      voteSaveError: "Your vote couldn't be saved. Please try again.",
+      themeDark: "Dark mode",
+      themeLight: "Light mode",
       rankClub: "#{n} in the squad",
       rankAll: "#{n} overall",
       close: "Close",
@@ -211,6 +222,17 @@
       nationality: "Uyruk",
       position: "Mevki",
       marketValue: "Piyasa değeri",
+      voteQuestion: "Bu değer doğru mu?",
+      voteLow: "Düşük",
+      voteFair: "Doğru",
+      voteHigh: "Yüksek",
+      voteCount: "Taraftar oyu: {n}",
+      voteFirst: "Henüz oy yok. İlk oyu sen ver!",
+      voteLoading: "Oylar yükleniyor…",
+      voteError: "Oylar şu an yüklenemedi.",
+      voteSaveError: "Oyun kaydedilemedi. Lütfen tekrar dene.",
+      themeDark: "Koyu mod",
+      themeLight: "Açık mod",
       rankClub: "Kadroda {n}. sırada",
       rankAll: "Genelde {n}. sırada",
       close: "Kapat",
@@ -320,6 +342,37 @@
     if (vars) for (const k of Object.keys(vars)) s = s.split("{" + k + "}").join(String(vars[k]));
     return s;
   };
+
+  // Light/dark: follows the device until the visitor picks one with the header button (index.html applies a saved
+  // choice before the page draws, so it doesn't flash).
+  const THEME_KEY = "mauros-value.theme";
+  const darkQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>';
+  const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>';
+  {
+    const saved = store.get(THEME_KEY);
+    if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+  }
+  const currentTheme = () => document.documentElement.dataset.theme || (darkQuery && darkQuery.matches ? "dark" : "light");
+
+  function renderThemeButton() {
+    const btn = document.getElementById("theme");
+    if (!btn) return;
+    const dark = currentTheme() === "dark";
+    const label = t(dark ? "themeLight" : "themeDark");
+    btn.innerHTML = dark ? SUN : MOON;
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+  }
+
+  function toggleTheme() {
+    const next = currentTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    store.set(THEME_KEY, next);
+    renderThemeButton();
+  }
+
+  if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener("change", renderThemeButton);
 
   const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -888,6 +941,7 @@
     const p = playerById.get(id);
     if (!p) return;
     const c = p.club;
+    if (openId !== id) votes.saveError = false;
     openId = id;
     dialog.className = "player-dialog club-scope";
     dialog.setAttribute("style", c.vars);
@@ -911,7 +965,10 @@
         <div class="pm-info">
           <p class="pm-pos">${shirt(p)}${esc(posLabel(p.pos))}</p>
           <h2 id="pm-name">${esc(p.name)}</h2>
-          <div class="pm-value"><span class="label">${esc(t("marketValue"))}</span>${value}</div>
+          <div class="pm-value">
+            <div class="pm-value-main"><span class="label">${esc(t("marketValue"))}</span>${value}</div>
+            ${voteBox(p)}
+          </div>
           ${statsBlock(p)}
           <dl class="pm-facts">
             <div><dt>${esc(t("age"))}</dt><dd>${p.age ?? "–"}</dd></div>
@@ -923,6 +980,108 @@
     if (!dialog.open) dialog.showModal();
     const close = dialog.querySelector(".pm-close");
     if (close) close.focus();
+    if (SHARED && Date.now() - votes.loadedAt > 60000) loadVotes();
+  }
+
+  /* ---------- "Is this value right?" ---------- */
+
+  // Fans vote each value too low / fair / too high. Votes live in the owner's Supabase table "value_votes",
+  // one per browser per player (a random id in localStorage, no accounts); the view "value_vote_counts" adds them up.
+  const VOTER_KEY = "mauros-value.voter";
+  const MY_VOTES_KEY = "mauros-value.votes";
+  const VOTE_KINDS = [[-1, "voteLow"], [0, "voteFair"], [1, "voteHigh"]];
+  const votes = {
+    counts: new Map(),
+    loadedAt: 0,
+    error: false,
+    saveError: false,
+    mine: (() => { try { return JSON.parse(store.get(MY_VOTES_KEY) || "{}") || {}; } catch (e) { return {}; } })()
+  };
+
+  function voterId() {
+    let id = store.get(VOTER_KEY);
+    if (!id) {
+      id = window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+      store.set(VOTER_KEY, id);
+    }
+    return id;
+  }
+
+  function voteBox(p) {
+    if (!SHARED || p.value == null) return "";
+    const c = votes.counts.get(p.id) || { "-1": 0, "0": 0, "1": 0 };
+    const total = c["-1"] + c["0"] + c["1"];
+    const mine = votes.mine[p.id];
+    const buttons = VOTE_KINDS.map(([v, key]) => {
+      const pct = total ? Math.round((c[v] / total) * 100) : 0;
+      return `<button type="button" class="vote vote-${v < 0 ? "low" : v > 0 ? "high" : "fair"}" data-vote="${v}" aria-pressed="${mine === v}" style="--pct: ${pct}%">
+          <span>${esc(t(key))}</span>${total ? `<span class="vote-pct">${pct}%</span>` : ""}
+        </button>`;
+    }).join("");
+    const note = votes.saveError ? t("voteSaveError")
+      : votes.error ? t("voteError")
+      : !votes.loadedAt ? t("voteLoading")
+      : total ? t("voteCount", { n: total.toLocaleString(loc()) })
+      : t("voteFirst");
+    return `<div class="pm-vote">
+        <p class="pm-vote-q">${esc(t("voteQuestion"))}</p>
+        <div class="vote-row" role="group" aria-label="${esc(t("voteQuestion"))}">${buttons}</div>
+        <p class="pm-vote-note" aria-live="polite">${esc(note)}</p>
+      </div>`;
+  }
+
+  // Redraw only the vote box of the open popup, keeping focus on the button that was focused.
+  function refreshVoteBox() {
+    const box = dialog.open && dialog.querySelector(".pm-vote");
+    const p = openId && playerById.get(openId);
+    if (!box || !p) return;
+    const focused = document.activeElement && document.activeElement.closest && document.activeElement.closest("[data-vote]");
+    box.outerHTML = voteBox(p);
+    if (focused) {
+      const again = dialog.querySelector(`[data-vote="${focused.dataset.vote}"]`);
+      if (again) again.focus();
+    }
+  }
+
+  async function loadVotes() {
+    try {
+      const r = await fetch(`${SUPABASE.url}/rest/v1/value_vote_counts?select=player,low,fair,high`, { headers: sbHeaders() });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const rows = await r.json();
+      votes.counts = new Map(rows.map((x) => [x.player, { "-1": Number(x.low) || 0, "0": Number(x.fair) || 0, "1": Number(x.high) || 0 }]));
+      votes.error = false;
+    } catch (e) {
+      votes.error = true;
+    }
+    votes.loadedAt = Date.now();
+    refreshVoteBox();
+  }
+
+  async function castVote(p, v) {
+    if (!p || !SHARED || votes.mine[p.id] === v) return;
+    const prev = votes.mine[p.id];
+    // Show it straight away, then store it; a new vote replaces this browser's old one.
+    const c = { "-1": 0, "0": 0, "1": 0, ...votes.counts.get(p.id) };
+    if (prev != null) c[prev] = Math.max(0, c[prev] - 1);
+    c[v] += 1;
+    votes.counts.set(p.id, c);
+    votes.mine[p.id] = v;
+    store.set(MY_VOTES_KEY, JSON.stringify(votes.mine));
+    votes.saveError = false;
+    refreshVoteBox();
+    try {
+      const r = await fetch(`${SUPABASE.url}/rest/v1/value_votes?on_conflict=voter,player`, {
+        method: "POST",
+        headers: { ...sbHeaders(), "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ voter: voterId(), player: p.id, vote: v, updated_at: new Date().toISOString() })
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+    } catch (e) {
+      if (prev == null) delete votes.mine[p.id]; else votes.mine[p.id] = prev;
+      store.set(MY_VOTES_KEY, JSON.stringify(votes.mine));
+      votes.saveError = true;
+    }
+    loadVotes();
   }
 
   dialog.addEventListener("close", () => { openId = null; });
@@ -1185,6 +1344,7 @@
     searchInput.setAttribute("aria-label", t("search"));
     $("#lang").setAttribute("aria-label", t("language"));
     document.querySelectorAll("#lang [data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    renderThemeButton();
     $("#footer").innerHTML = `
       <div class="foot-inner">
         <div class="foot-brand"><span class="brand-mark">${MARK}</span>Mauro's Value</div>
@@ -1246,6 +1406,17 @@
       renderMain();
       const again = document.querySelector(`[data-set="${setter.dataset.set}"][data-val="${setter.dataset.val}"]`);
       if (again) again.focus();
+      return;
+    }
+
+    if (el.closest("#theme")) {
+      toggleTheme();
+      return;
+    }
+
+    const voteButton = el.closest("[data-vote]");
+    if (voteButton && openId) {
+      castVote(playerById.get(openId), Number(voteButton.dataset.vote));
       return;
     }
 

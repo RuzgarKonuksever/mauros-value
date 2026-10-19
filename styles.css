@@ -330,6 +330,23 @@ main,
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.14);
 }
 
+.theme-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.theme-btn:hover { color: var(--ink); }
+.theme-btn svg { width: 18px; height: 18px; }
+
 .tabs { border-top: 1px solid var(--line); }
 
 .tabs-inner {
@@ -1315,13 +1332,54 @@ main { display: block; padding-block: 28px 72px; }
 }
 
 .pm-value {
-  display: grid;
-  gap: 3px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
   margin-bottom: 16px;
   padding: 13px 15px;
   border-radius: 10px;
   background: var(--surface-2);
 }
+
+.pm-value-main { display: grid; gap: 3px; }
+
+/* "Is this value right?" votes, beside the value (below it when there's no room). */
+.pm-vote { flex: 1 1 240px; display: grid; gap: 6px; }
+
+.pm-vote-q,
+.pm-vote-note { margin: 0; font-size: 12.5px; color: var(--muted); }
+
+.pm-vote-q { font-weight: 700; color: var(--ink-2); }
+
+.vote-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+
+.vote {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: linear-gradient(to top, var(--vote-fill) var(--pct, 0%), var(--surface) 0);
+  font: 600 13px/1.1 var(--font-body);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.vote-low { --vote-fill: color-mix(in srgb, #2F7BD8 22%, var(--surface)); }
+.vote-fair { --vote-fill: color-mix(in srgb, var(--accent) 22%, var(--surface)); }
+.vote-high { --vote-fill: color-mix(in srgb, #D8572F 22%, var(--surface)); }
+
+.vote:hover { border-color: var(--ink-2); }
+
+.vote[aria-pressed="true"] {
+  border-color: var(--club-ui, var(--accent));
+  box-shadow: inset 0 0 0 1px var(--club-ui, var(--accent));
+}
+
+.vote-pct { font-size: 12px; font-weight: 700; color: var(--muted); }
 
 .pm-value .label {
   font-size: 11px;
