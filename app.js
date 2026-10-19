@@ -124,7 +124,8 @@
       footerNote: "A fan-made site. Every market value here is our own estimate. Not affiliated with any club or with Transfermarkt.",
       footerPhotos: "Player photos come from Wikimedia Commons under free licences. Each player's popup credits the photographer.",
       footerStats: "Match stats: {source}, updated {date}.",
-      footerUpdated: "Last updated {date}."
+      footerUpdated: "Last updated {date}.",
+      cookieSettings: "Cookie settings"
     },
     tr: {
       tagline: "Dört Büyüklerin gerçek piyasa değerleri",
@@ -239,7 +240,8 @@
       footerNote: "Taraftar yapımı bir sitedir. Buradaki tüm piyasa değerleri kendi tahminimizdir. Hiçbir kulüp veya Transfermarkt ile bağlantısı yoktur.",
       footerPhotos: "Oyuncu fotoğrafları özgür lisanslarla Wikimedia Commons'tan alınmıştır. Fotoğrafçı bilgisi her oyuncunun penceresinde yer alır.",
       footerStats: "Maç istatistikleri: {source}, son güncelleme {date}.",
-      footerUpdated: "Son güncelleme: {date}."
+      footerUpdated: "Son güncelleme: {date}.",
+      cookieSettings: "Çerez ayarları"
     }
   };
 
@@ -1190,6 +1192,7 @@
         ${players.some((p) => p.credit) ? `<p>${esc(t("footerPhotos"))}</p>` : ""}
         ${STATS.updated && STATS.source ? `<p>${esc(t("footerStats", { source: STATS.source, date: fmtDate(STATS.updated) }))}</p>` : ""}
         <p>${esc(t("footerUpdated", { date: fmtDate(DATA.updated) }))}</p>
+        ${window.MVAnalytics ? `<p><button type="button" class="link" data-action="cookie-settings">${esc(t("cookieSettings"))}</button></p>` : ""}
       </div>`;
   }
 
@@ -1256,6 +1259,7 @@
     if (action) {
       if (action.dataset.action === "close") dialog.close();
       if (action.dataset.action === "pred-refresh") loadSharedGuesses();
+      if (action.dataset.action === "cookie-settings") window.MVAnalytics.ask();
       if (action.dataset.action === "pred-change") {
         predUser = "";
         store.set(USER_KEY, "");
