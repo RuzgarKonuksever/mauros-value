@@ -23,6 +23,7 @@ window.GD_DATA = {
     {
       id: "galatasaray", name: "Galatasaray", short: "GS",
       founded: 1905, city: "İstanbul", stadium: "RAMS Park", seats: 53978,
+      logo: "images/clubs/galatasaray.png",
       colors: { main: "#A6192E", second: "#FDB913", dark: "#F0566C" },
       players: [
         { no: 1,  name: "Uğurcan Çakır",          pos: "GK", born: "1996-04-05", nat: ["tr"],       value: 30 },
@@ -62,6 +63,7 @@ window.GD_DATA = {
     {
       id: "fenerbahce", name: "Fenerbahçe", short: "FB",
       founded: 1907, city: "İstanbul", stadium: "Chobani Stadyumu Şükrü Saracoğlu", seats: 47430,
+      logo: "images/clubs/fenerbahce.png",
       colors: { main: "#0E2A5C", second: "#FFD100", dark: "#FFD100" },
       players: [
         { no: 31,   name: "Ederson",            pos: "GK", born: "1993-08-17", nat: ["br", "pt"],     value: 10 },
@@ -97,6 +99,7 @@ window.GD_DATA = {
     {
       id: "besiktas", name: "Beşiktaş", short: "BJK",
       founded: 1903, city: "İstanbul", stadium: "Beşiktaş Park", seats: 42684,
+      logo: "images/clubs/besiktas.png",
       colors: { main: "#141414", second: "#FFFFFF", dark: "#E6E6E6" },
       players: [
         { no: 1,  name: "Alexander Nübel",   pos: "GK", born: "1996-09-30", nat: ["de"],           value: 14 },
@@ -135,6 +138,7 @@ window.GD_DATA = {
     {
       id: "trabzonspor", name: "Trabzonspor", short: "TS",
       founded: 1967, city: "Trabzon", stadium: "Papara Park", seats: 41061,
+      logo: "images/clubs/trabzonspor.png",
       colors: { main: "#7B1C3F", second: "#48B0E8", dark: "#48B0E8" },
       players: [
         { no: 24, name: "André Onana",          pos: "GK", born: "1996-04-02", nat: ["cm"],       value: 15 },

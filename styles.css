@@ -188,6 +188,8 @@ h1, h2, h3 { text-wrap: balance; }
 
 .badge { flex: none; display: block; }
 .badge-edge { stroke: var(--line-strong); stroke-width: 1; }
+/* Crests keep their own shape inside the square; a thin light outline keeps Beşiktaş's black edge visible on dark backgrounds. */
+.badge-logo { object-fit: contain; filter: var(--logo-outline); }
 .badge text { font-family: var(--font-display); font-weight: 800; }
 
 /* ---------- Header ---------- */

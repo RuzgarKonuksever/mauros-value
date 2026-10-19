@@ -651,7 +651,11 @@
 
   const state = { clubSort: "pos", club: "all", group: "all", sort: "value", q: "" };
 
+  // The club's crest (logo in data.js); clubs without one get a round badge in their colours.
   function badge(c, size) {
+    if (c.logo) {
+      return `<img class="badge badge-logo" src="${esc(assetUrl(c.logo))}" width="${size}" height="${size}" alt="" aria-hidden="true" decoding="async">`;
+    }
     const fontSize = c.short.length > 2 ? 12 : 15;
     return `<svg class="badge" width="${size}" height="${size}" viewBox="0 0 40 40" aria-hidden="true" focusable="false">` +
       `<circle class="badge-edge" cx="20" cy="20" r="19.3" fill="${c.colors.second}"/>` +
