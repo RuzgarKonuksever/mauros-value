@@ -60,6 +60,7 @@
       noValuesTitle: "Market values are on the way",
       noValuesText: "As soon as values are entered, this page ranks the most valuable players and compares the four squads.",
       founded: "Founded {y}",
+      titles: "{n} league titles",
       seats: "{n} seats",
       squadSize: "Squad",
       avgAge: "Avg. age",
@@ -208,6 +209,7 @@
       noValuesTitle: "Piyasa değerleri yolda",
       noValuesText: "Değerler girildiği anda bu sayfa en değerli oyuncuları sıralayacak ve dört kadroyu karşılaştıracak.",
       founded: "Kuruluş {y}",
+      titles: "{n} şampiyonluk",
       seats: "{n} kişilik",
       squadSize: "Kadro",
       avgAge: "Yaş ort.",
@@ -653,6 +655,14 @@
 
   const state = { clubSort: "pos", club: "all", group: "all", sort: "value", q: "" };
 
+  // League titles (titles in data.js) with a small trophy, shown after "Founded … · city".
+  const TROPHY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V18h3v2H8v-2h3v-3.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zm0 4H6v1a2 2 0 0 0 1 1.7V7zm10 0v2.7A2 2 0 0 0 18 8V7h-1z"/></svg>';
+  const titlesTag = (c, ownLine) => {
+    if (!c.titles) return "";
+    const tag = `<span class="titles">${TROPHY}${esc(t("titles", { n: c.titles }))}</span>`;
+    return ownLine ? `<br>${tag}` : ` · ${tag}`;
+  };
+
   // The club's crest (logo in data.js); clubs without one get a round badge in their colours.
   function badge(c, size) {
     if (c.logo) {
@@ -763,7 +773,7 @@
       <a class="club-card club-scope" href="#${c.id}" style="${c.vars}">
         <div class="cc-top" data-short="${esc(c.short)}">
           ${badge(c, 84)}
-          <div><h3>${esc(c.name)}</h3><p>${esc(t("founded", { y: c.founded }))} · ${esc(c.city)}</p></div>
+          <div><h3>${esc(c.name)}</h3><p>${esc(t("founded", { y: c.founded }))} · ${esc(c.city)}${titlesTag(c, true)}</p></div>
         </div>
         <dl class="cc-stats">
           <div><dt>${esc(t("squadSize"))}</dt><dd>${s.size}</dd></div>
@@ -1055,7 +1065,7 @@
           <div class="cb-id">
             <p class="cb-eyebrow">Süper Lig · ${esc(DATA.season)}</p>
             <h1>${esc(c.name)}</h1>
-            <p class="cb-meta">${esc(t("founded", { y: c.founded }))} · ${esc(c.city)} · ${esc(c.stadium)} (${esc(t("seats", { n: nf(c.seats, 0) }))})</p>
+            <p class="cb-meta">${esc(t("founded", { y: c.founded }))} · ${esc(c.city)} · ${esc(c.stadium)} (${esc(t("seats", { n: nf(c.seats, 0) }))})${titlesTag(c)}</p>
           </div>
           <dl class="cb-stats">
             <div><dt>${esc(t("squadSize"))}</dt><dd>${s.size}</dd></div>

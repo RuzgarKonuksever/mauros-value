@@ -598,6 +598,10 @@ main { display: block; padding-block: 28px 72px; }
 
 .cc-top p { margin: 5px 0 0; font-size: 13px; opacity: 0.86; }
 
+/* "26 şampiyonluk" with a small trophy, in the club's second colour (gold for Galatasaray, yellow for Fenerbahçe…). */
+.titles { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; white-space: nowrap; color: var(--c2); }
+.titles svg { width: 14px; height: 14px; flex: none; }
+
 .cc-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
