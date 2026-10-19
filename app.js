@@ -661,7 +661,9 @@
   }
 
   function avatar(p, cls = "avatar") {
-    const img = p.photo ? `<img src="${esc(p.photo)}" alt="" loading="lazy" decoding="async">` : "";
+    // Photos carry the upload's ?v= stamp, so a replaced photo shows straight away instead of an old saved copy.
+    const src = /^(https?:|data:)/.test(p.photo) ? p.photo : assetUrl(p.photo);
+    const img = p.photo ? `<img src="${esc(src)}" alt="" loading="lazy" decoding="async">` : "";
     return `<span class="${cls}" style="${p.club.vars}" aria-hidden="true">${esc(initials(p.name))}${img}</span>`;
   }
 
