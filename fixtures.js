@@ -4,7 +4,7 @@
   Written by .claude/update-stats.ps1 from GOAL API. Don't edit by hand.
 */
 window.GD_FIXTURES = {
-  updated: "2026-10-19",
+  updated: "2026-10-27",
   matches: [
     { id: "cmrjvxn830y3wo807iicapmg6", club: "fenerbahce", kickoff: "2026-07-21T18:00:00.000Z", comp: "uefa-champions-league", stage: "Qualifying", home: "Fenerbahce", away: "Gornik Zabrze", ourSide: "home", hs: 1, as: 0, status: "played" },
     { id: "cmrmqt9os398st007t0c191li", club: "besiktas", kickoff: "2026-07-23T18:00:00.000Z", comp: "uefa-europa-league", stage: "Qualifying", home: "Besiktas", away: "Midtjylland", ourSide: "home", hs: 1, as: 0, status: "played" },
@@ -27,10 +27,10 @@ window.GD_FIXTURES = {
     { id: "cmtyc06y2p6dulc07q7qgj798", club: "fenerbahce", kickoff: "2026-10-14T19:00:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Aston Villa", away: "Fenerbahce", ourSide: "away", hs: 6, as: 0, status: "played" },
     { id: "cmtyckhdm2czmlc07umrn2rbz", club: "trabzonspor", kickoff: "2026-10-15T16:45:00.000Z", comp: "uefa-conference-league", stage: "League Phase", home: "KuPS", away: "Trabzonspor", ourSide: "away", hs: 2, as: 4, status: "played" },
     { id: "cmtyckkld2gq1lc07i2h8m13g", club: "besiktas", kickoff: "2026-10-15T19:00:00.000Z", comp: "uefa-europa-league", stage: "League Phase", home: "Hoffenheim", away: "Besiktas", ourSide: "away", hs: 2, as: 3, status: "played" },
-    { id: "cmu74fa84nqczqu07gims6288", club: "fenerbahce", kickoff: "2026-10-20T16:45:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Fenerbahce", away: "Slavia Prague", ourSide: "home", hs: null, as: null, status: "upcoming" },
-    { id: "cmu74fc24nqx8qu07y1m0mfw4", club: "galatasaray", kickoff: "2026-10-21T16:45:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Lille", away: "Galatasaray", ourSide: "away", hs: null, as: null, status: "upcoming" },
-    { id: "cmu74fd9ynrduqu071exjj0s7", club: "trabzonspor", kickoff: "2026-10-22T16:45:00.000Z", comp: "uefa-conference-league", stage: "League Phase", home: "Trabzonspor", away: "Hearts", ourSide: "home", hs: null, as: null, status: "upcoming" },
-    { id: "cmu74fdbdnrf4qu07v8ilqiue", club: "besiktas", kickoff: "2026-10-22T19:00:00.000Z", comp: "uefa-europa-league", stage: "League Phase", home: "Besiktas", away: "Crystal Palace", ourSide: "home", hs: null, as: null, status: "upcoming" },
+    { id: "cmu74fa84nqczqu07gims6288", club: "fenerbahce", kickoff: "2026-10-20T16:45:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Fenerbahce", away: "Slavia Prague", ourSide: "home", hs: 2, as: 2, status: "played" },
+    { id: "cmu74fc24nqx8qu07y1m0mfw4", club: "galatasaray", kickoff: "2026-10-21T16:45:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Lille", away: "Galatasaray", ourSide: "away", hs: 2, as: 4, status: "played" },
+    { id: "cmu74fd9ynrduqu071exjj0s7", club: "trabzonspor", kickoff: "2026-10-22T16:45:00.000Z", comp: "uefa-conference-league", stage: "League Phase", home: "Trabzonspor", away: "Hearts", ourSide: "home", hs: 2, as: 0, status: "played" },
+    { id: "cmu74fdbdnrf4qu07v8ilqiue", club: "besiktas", kickoff: "2026-10-22T19:00:00.000Z", comp: "uefa-europa-league", stage: "League Phase", home: "Besiktas", away: "Crystal Palace", ourSide: "home", hs: 2, as: 2, status: "played" },
     { id: "cmu74gz5to9mcqu07p5xr20o3", club: "galatasaray", kickoff: "2026-11-03T17:45:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Galatasaray", away: "Stuttgart", ourSide: "home", hs: null, as: null, status: "upcoming" },
     { id: "cmu74h08vo9xfqu078qm36p2n", club: "fenerbahce", kickoff: "2026-11-04T17:45:00.000Z", comp: "uefa-champions-league", stage: "League Phase", home: "Fenerbahce", away: "Liverpool", ourSide: "home", hs: null, as: null, status: "upcoming" },
     { id: "cmu74h138oa6bqu072x22dixv", club: "trabzonspor", kickoff: "2026-11-05T17:45:00.000Z", comp: "uefa-conference-league", stage: "League Phase", home: "Trabzonspor", away: "Freiburg", ourSide: "home", hs: null, as: null, status: "upcoming" },
@@ -54,51 +54,51 @@ window.GD_FIXTURES = {
   clubs: {
     galatasaray: {
       last: [
-        { kickoff: "2026-09-13T17:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Kocaelispor", ourSide: "home", hs: 1, as: 0 },
-        { kickoff: "2026-09-19T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Galatasaray", ourSide: "away", hs: 4, as: 0 },
         { kickoff: "2026-10-09T17:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Kasimpasa", ourSide: "home", hs: 3, as: 1 },
         { kickoff: "2026-10-13T19:00:00.000Z", comp: "uefa-champions-league", home: "Galatasaray", away: "Barcelona", ourSide: "home", hs: 1, as: 4 },
-        { kickoff: "2026-10-17T13:00:00.000Z", comp: "super-lig", home: "Genclerbirligi", away: "Galatasaray", ourSide: "away", hs: 0, as: 1 }],
+        { kickoff: "2026-10-17T13:00:00.000Z", comp: "super-lig", home: "Genclerbirligi", away: "Galatasaray", ourSide: "away", hs: 0, as: 1 },
+        { kickoff: "2026-10-21T16:45:00.000Z", comp: "uefa-champions-league", home: "Lille", away: "Galatasaray", ourSide: "away", hs: 2, as: 4 },
+        { kickoff: "2026-10-26T18:30:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Fenerbahce", ourSide: "home", hs: 2, as: 1 }],
       next: [
-        { kickoff: "2026-10-21T16:45:00.000Z", comp: "uefa-champions-league", home: "Lille", away: "Galatasaray", ourSide: "away", hs: null, as: null },
-        { kickoff: "2026-10-26T18:30:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Fenerbahce", ourSide: "home", hs: null, as: null },
-        { kickoff: "2026-10-30T17:00:00.000Z", comp: "super-lig", home: "Konyaspor", away: "Galatasaray", ourSide: "away", hs: null, as: null }]
+        { kickoff: "2026-10-30T17:00:00.000Z", comp: "super-lig", home: "Konyaspor", away: "Galatasaray", ourSide: "away", hs: null, as: null },
+        { kickoff: "2026-11-03T17:45:00.000Z", comp: "uefa-champions-league", home: "Galatasaray", away: "Stuttgart", ourSide: "home", hs: null, as: null },
+        { kickoff: "2026-11-07T16:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Amedspor", ourSide: "home", hs: null, as: null }]
     },
     fenerbahce: {
       last: [
-        { kickoff: "2026-09-14T17:00:00.000Z", comp: "super-lig", home: "Gaziantep", away: "Fenerbahce", ourSide: "away", hs: 0, as: 0 },
-        { kickoff: "2026-09-20T14:00:00.000Z", comp: "super-lig", home: "Fenerbahce", away: "Eyupspor", ourSide: "home", hs: 8, as: 0 },
         { kickoff: "2026-10-10T16:00:00.000Z", comp: "super-lig", home: "Rizespor", away: "Fenerbahce", ourSide: "away", hs: 0, as: 3 },
         { kickoff: "2026-10-14T19:00:00.000Z", comp: "uefa-champions-league", home: "Aston Villa", away: "Fenerbahce", ourSide: "away", hs: 6, as: 0 },
-        { kickoff: "2026-10-17T16:00:00.000Z", comp: "super-lig", home: "Fenerbahce", away: "Alanyaspor", ourSide: "home", hs: 3, as: 0 }],
+        { kickoff: "2026-10-17T16:00:00.000Z", comp: "super-lig", home: "Fenerbahce", away: "Alanyaspor", ourSide: "home", hs: 3, as: 0 },
+        { kickoff: "2026-10-20T16:45:00.000Z", comp: "uefa-champions-league", home: "Fenerbahce", away: "Slavia Prague", ourSide: "home", hs: 2, as: 2 },
+        { kickoff: "2026-10-26T18:30:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Fenerbahce", ourSide: "away", hs: 2, as: 1 }],
       next: [
-        { kickoff: "2026-10-20T16:45:00.000Z", comp: "uefa-champions-league", home: "Fenerbahce", away: "Slavia Prague", ourSide: "home", hs: null, as: null },
-        { kickoff: "2026-10-26T18:30:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Fenerbahce", ourSide: "away", hs: null, as: null },
-        { kickoff: "2026-10-31T16:00:00.000Z", comp: "super-lig", home: "Fenerbahce", away: "Goztepe", ourSide: "home", hs: null, as: null }]
+        { kickoff: "2026-10-31T16:00:00.000Z", comp: "super-lig", home: "Fenerbahce", away: "Goztepe", ourSide: "home", hs: null, as: null },
+        { kickoff: "2026-11-04T17:45:00.000Z", comp: "uefa-champions-league", home: "Fenerbahce", away: "Liverpool", ourSide: "home", hs: null, as: null },
+        { kickoff: "2026-11-08T13:00:00.000Z", comp: "super-lig", home: "Corum", away: "Fenerbahce", ourSide: "away", hs: null, as: null }]
     },
     besiktas: {
       last: [
-        { kickoff: "2026-09-11T17:00:00.000Z", comp: "super-lig", home: "Besiktas", away: "Erzurumspor", ourSide: "home", hs: 3, as: 0 },
-        { kickoff: "2026-09-17T19:00:00.000Z", comp: "uefa-europa-league", home: "Besiktas", away: "Marseille", ourSide: "home", hs: 4, as: 1 },
-        { kickoff: "2026-09-20T17:00:00.000Z", comp: "super-lig", home: "Amedspor", away: "Besiktas", ourSide: "away", hs: 3, as: 2 },
         { kickoff: "2026-10-11T16:00:00.000Z", comp: "super-lig", home: "Besiktas", away: "Kocaelispor", ourSide: "home", hs: 2, as: 1 },
-        { kickoff: "2026-10-15T19:00:00.000Z", comp: "uefa-europa-league", home: "Hoffenheim", away: "Besiktas", ourSide: "away", hs: 2, as: 3 }],
+        { kickoff: "2026-10-15T19:00:00.000Z", comp: "uefa-europa-league", home: "Hoffenheim", away: "Besiktas", ourSide: "away", hs: 2, as: 3 },
+        { kickoff: "2026-10-19T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Besiktas", ourSide: "away", hs: 2, as: 0 },
+        { kickoff: "2026-10-22T19:00:00.000Z", comp: "uefa-europa-league", home: "Besiktas", away: "Crystal Palace", ourSide: "home", hs: 2, as: 2 },
+        { kickoff: "2026-10-26T16:00:00.000Z", comp: "super-lig", home: "Besiktas", away: "Basaksehir", ourSide: "home", hs: 2, as: 0 }],
       next: [
-        { kickoff: "2026-10-19T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Besiktas", ourSide: "away", hs: null, as: null },
-        { kickoff: "2026-10-22T19:00:00.000Z", comp: "uefa-europa-league", home: "Besiktas", away: "Crystal Palace", ourSide: "home", hs: null, as: null },
-        { kickoff: "2026-10-26T16:00:00.000Z", comp: "super-lig", home: "Besiktas", away: "Basaksehir", ourSide: "home", hs: null, as: null }]
+        { kickoff: "2026-11-01T16:00:00.000Z", comp: "super-lig", home: "Kasimpasa", away: "Besiktas", ourSide: "away", hs: null, as: null },
+        { kickoff: "2026-11-05T20:00:00.000Z", comp: "uefa-europa-league", home: "Celtic", away: "Besiktas", ourSide: "away", hs: null, as: null },
+        { kickoff: "2026-11-08T18:00:00.000Z", comp: "super-lig", home: "Besiktas", away: "Genclerbirligi", ourSide: "home", hs: null, as: null }]
     },
     trabzonspor: {
       last: [
-        { kickoff: "2026-09-06T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Genclerbirligi", ourSide: "home", hs: 5, as: 0 },
-        { kickoff: "2026-09-12T17:00:00.000Z", comp: "super-lig", home: "Konyaspor", away: "Trabzonspor", ourSide: "away", hs: 1, as: 0 },
-        { kickoff: "2026-09-19T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Galatasaray", ourSide: "home", hs: 4, as: 0 },
         { kickoff: "2026-10-10T13:00:00.000Z", comp: "super-lig", home: "Samsunspor", away: "Trabzonspor", ourSide: "away", hs: 0, as: 3 },
-        { kickoff: "2026-10-15T16:45:00.000Z", comp: "uefa-conference-league", home: "KuPS", away: "Trabzonspor", ourSide: "away", hs: 2, as: 4 }],
+        { kickoff: "2026-10-15T16:45:00.000Z", comp: "uefa-conference-league", home: "KuPS", away: "Trabzonspor", ourSide: "away", hs: 2, as: 4 },
+        { kickoff: "2026-10-19T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Besiktas", ourSide: "home", hs: 2, as: 0 },
+        { kickoff: "2026-10-22T16:45:00.000Z", comp: "uefa-conference-league", home: "Trabzonspor", away: "Hearts", ourSide: "home", hs: 2, as: 0 },
+        { kickoff: "2026-10-26T16:00:00.000Z", comp: "super-lig", home: "Rizespor", away: "Trabzonspor", ourSide: "away", hs: 3, as: 4 }],
       next: [
-        { kickoff: "2026-10-19T17:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Besiktas", ourSide: "home", hs: null, as: null },
-        { kickoff: "2026-10-22T16:45:00.000Z", comp: "uefa-conference-league", home: "Trabzonspor", away: "Hearts", ourSide: "home", hs: null, as: null },
-        { kickoff: "2026-10-26T16:00:00.000Z", comp: "super-lig", home: "Rizespor", away: "Trabzonspor", ourSide: "away", hs: null, as: null }]
+        { kickoff: "2026-11-01T13:00:00.000Z", comp: "super-lig", home: "Trabzonspor", away: "Gaziantep", ourSide: "home", hs: null, as: null },
+        { kickoff: "2026-11-05T17:45:00.000Z", comp: "uefa-conference-league", home: "Trabzonspor", away: "Freiburg", ourSide: "home", hs: null, as: null },
+        { kickoff: "2026-11-08T15:30:00.000Z", comp: "super-lig", home: "Alanyaspor", away: "Trabzonspor", ourSide: "away", hs: null, as: null }]
     }
   }
 };
