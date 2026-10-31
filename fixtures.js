@@ -4,7 +4,7 @@
   Written by .claude/update-stats.ps1 from GOAL API. Don't edit by hand.
 */
 window.GD_FIXTURES = {
-  updated: "2026-10-27",
+  updated: "2026-10-31",
   matches: [
     { id: "cmrjvxn830y3wo807iicapmg6", club: "fenerbahce", kickoff: "2026-07-21T18:00:00.000Z", comp: "uefa-champions-league", stage: "Qualifying", home: "Fenerbahce", away: "Gornik Zabrze", ourSide: "home", hs: 1, as: 0, status: "played" },
     { id: "cmrmqt9os398st007t0c191li", club: "besiktas", kickoff: "2026-07-23T18:00:00.000Z", comp: "uefa-europa-league", stage: "Qualifying", home: "Besiktas", away: "Midtjylland", ourSide: "home", hs: 1, as: 0, status: "played" },
@@ -54,15 +54,15 @@ window.GD_FIXTURES = {
   clubs: {
     galatasaray: {
       last: [
-        { kickoff: "2026-10-09T17:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Kasimpasa", ourSide: "home", hs: 3, as: 1 },
         { kickoff: "2026-10-13T19:00:00.000Z", comp: "uefa-champions-league", home: "Galatasaray", away: "Barcelona", ourSide: "home", hs: 1, as: 4 },
         { kickoff: "2026-10-17T13:00:00.000Z", comp: "super-lig", home: "Genclerbirligi", away: "Galatasaray", ourSide: "away", hs: 0, as: 1 },
         { kickoff: "2026-10-21T16:45:00.000Z", comp: "uefa-champions-league", home: "Lille", away: "Galatasaray", ourSide: "away", hs: 2, as: 4 },
-        { kickoff: "2026-10-26T18:30:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Fenerbahce", ourSide: "home", hs: 2, as: 1 }],
+        { kickoff: "2026-10-26T18:30:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Fenerbahce", ourSide: "home", hs: 2, as: 1 },
+        { kickoff: "2026-10-30T17:00:00.000Z", comp: "super-lig", home: "Konyaspor", away: "Galatasaray", ourSide: "away", hs: 0, as: 4 }],
       next: [
-        { kickoff: "2026-10-30T17:00:00.000Z", comp: "super-lig", home: "Konyaspor", away: "Galatasaray", ourSide: "away", hs: null, as: null },
         { kickoff: "2026-11-03T17:45:00.000Z", comp: "uefa-champions-league", home: "Galatasaray", away: "Stuttgart", ourSide: "home", hs: null, as: null },
-        { kickoff: "2026-11-07T16:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Amedspor", ourSide: "home", hs: null, as: null }]
+        { kickoff: "2026-11-07T16:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Amedspor", ourSide: "home", hs: null, as: null },
+        { kickoff: "2026-11-21T13:00:00.000Z", comp: "super-lig", home: "Galatasaray", away: "Samsunspor", ourSide: "home", hs: null, as: null }]
     },
     fenerbahce: {
       last: [
